@@ -87,7 +87,7 @@ class SummarizationService:
                     )
 
                     llm_result, llm_source = await self._llm_client.synthesize_event(
-                        workspace, timeout=7.0
+                        workspace
                     )
 
                     if llm_result and llm_source:

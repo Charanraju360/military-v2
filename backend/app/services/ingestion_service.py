@@ -138,10 +138,24 @@ class IngestionService:
 
     async def _collect_api(self, source: Source) -> SourceCollectionResult:
         payload, fetched_at = await self._fetch(source.url)
-        items = json.loads(payload)
-        if not isinstance(items, list):
-            raise ValueError("API response must be a JSON array")
+        data = json.loads(payload)
         mapping = source.field_mapping or {}
+        root_key = mapping.get("root")
+
+        if isinstance(data, dict):
+            if root_key and root_key in data and isinstance(data[root_key], list):
+                items = data[root_key]
+            else:
+                for candidate in ("results", "articles", "data", "items", "headlines"):
+                    if candidate in data and isinstance(data[candidate], list):
+                        items = data[candidate]
+                        break
+                else:
+                    raise ValueError(f"API response object has no article list under '{root_key or 'articles/results'}'")
+        elif isinstance(data, list):
+            items = data
+        else:
+            raise ValueError("API response must be a JSON array or object containing an article list")
         # If items have date/published_at, sort descending to ingest latest news first
         date_key = mapping.get("published_at", "date")
         if any(isinstance(it, dict) and date_key in it for it in items):

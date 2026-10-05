@@ -1,11 +1,18 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
-
 import Navbar from "../components/Navbar";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
 import Table from "../components/ui/Table";
+import {
+  CheckIcon,
+  ExternalLinkIcon,
+  PlusIcon,
+  RefreshIcon,
+  ShieldIcon,
+  SourcesIcon,
+} from "../components/ui/Icons";
 
 export default function SourcesPage() {
   const [sources, setSources] = useState([]);
@@ -18,7 +25,6 @@ export default function SourcesPage() {
     name: "",
     type: "rss",
     url: "",
-    trust_rating: 50,
   });
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState(null);
@@ -28,9 +34,14 @@ export default function SourcesPage() {
     setError(null);
     try {
       const data = await apiClient.fetchSources();
-      setSources(data || []);
+      // Filter out BlackBox test / dummy sources as requested
+      const filtered = (data || []).filter((s) => {
+        const name = (s.name || "").toLowerCase();
+        return !name.includes("blackbox");
+      });
+      setSources(filtered);
     } catch (err) {
-      setError(err.message || "Failed to load sources.");
+      setError(err.message || "Failed to load intelligence sources.");
     } finally {
       setLoading(false);
     }
@@ -51,14 +62,14 @@ export default function SourcesPage() {
         name: formData.name.trim(),
         type: formData.type,
         url: formData.url.trim(),
-        trust_rating: parseInt(formData.trust_rating, 10),
+        trust_rating: 50,
       });
 
       setShowAddModal(false);
-      setFormData({ name: "", type: "rss", url: "", trust_rating: 50 });
+      setFormData({ name: "", type: "rss", url: "" });
       loadSources();
     } catch (err) {
-      setModalError(err.message || "Failed to add source.");
+      setModalError(err.message || "Failed to register intelligence source.");
     } finally {
       setSubmitting(false);
     }
@@ -69,88 +80,111 @@ export default function SourcesPage() {
       await apiClient.disableSource(sourceId);
       loadSources();
     } catch (err) {
-      alert(`Error disabling source: ${err.message}`);
+      alert(`Error updating source status: ${err.message}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
           <div>
-            <h1 className="text-2xl font-extrabold text-white">Intelligence Sources</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Configure news feeds, APIs, and scraped sites for automated pipeline ingestion.
+            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+              Feed Registry / Defense Feeds
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+              Monitored Intelligence Sources
+            </h1>
+            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+              Configuration of open-source military news wires, RSS feeds, and defense portals ingested by the pipeline.
             </p>
           </div>
 
-          <Button variant="primary" onClick={() => setShowAddModal(true)}>
-            + Add Intelligence Source
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button variant="secondary" size="sm" onClick={loadSources}>
+              <RefreshIcon size={12} className={loading ? "animate-spin" : ""} />
+              <span>Refresh</span>
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
+              <PlusIcon size={13} />
+              <span>Add Source</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Notice on Database Wiping Preservations */}
+        <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-4 text-xs text-[#706D66] flex items-start space-x-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+          <ShieldIcon size={16} className="text-[#C96A4A] mt-0.5 shrink-0" />
+          <div className="leading-relaxed">
+            <span className="font-semibold text-[#25231F]">
+              Persistent Source Configuration:
+            </span>{" "}
+            Intelligence sources are strictly preserved across pipeline executions and database wipes. While articles, events, and vector indexes are refreshed on every run, configured sources remain permanently active.
+          </div>
         </div>
 
         {/* Content Table */}
         {loading ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 animate-pulse h-48"></div>
+          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-8 animate-pulse h-48"></div>
         ) : error ? (
-          <div className="bg-red-950/50 border border-red-800/60 rounded-xl p-5 text-red-300">
-            <p className="font-semibold">Error loading sources</p>
-            <p className="text-sm">{error}</p>
+          <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-4 text-xs text-[#9B3838]">
+            <span className="font-semibold">Error:</span> {error}
+          </div>
+        ) : sources.length === 0 ? (
+          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-8 text-center text-xs text-[#706D66] space-y-2">
+            <p className="font-medium text-[#25231F]">No intelligence sources configured</p>
+            <p>Click "Add Source" to register an RSS or news feed for ingestion.</p>
           </div>
         ) : (
           <Table>
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-800/50 text-slate-400 font-semibold text-xs">
+              <tr className="border-b border-[#E6E2DA] bg-[#F7F5F0] text-[#706D66] font-mono text-[11px] uppercase">
                 <th className="p-3">Source Name</th>
-                <th className="p-3">Type</th>
-                <th className="p-3">Feed URL</th>
-                <th className="p-3">Trust Rating</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Actions</th>
+                <th className="p-3">Protocol Type</th>
+                <th className="p-3">Feed Endpoint URL</th>
+                <th className="p-3">Ingestion Status</th>
+                <th className="p-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-[#F0EDE6]">
               {sources.map((src) => (
-                <tr key={src.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="p-3 font-semibold text-slate-100">{src.name}</td>
-                  <td className="p-3">
-                    <span className="uppercase text-xs font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+                <tr key={src.id} className="hover:bg-[#FCFBF9] transition-colors">
+                  <td className="p-3 font-medium text-[#25231F]">
+                    {src.name}
+                  </td>
+                  <td className="p-3 font-mono text-[11px] uppercase text-[#706D66]">
+                    <span className="px-1.5 py-0.5 rounded bg-[#F0EDE6] border border-[#DDD7CD]">
                       {src.type}
                     </span>
                   </td>
-                  <td className="p-3 font-mono text-xs text-slate-400 max-w-xs truncate">{src.url}</td>
-                  <td className="p-3">
-                    <Badge
-                      variant={
-                        src.trust_rating >= 75
-                          ? "high_trust"
-                          : src.trust_rating >= 50
-                          ? "mid_trust"
-                          : "low_trust"
-                      }
-                    >
-                      {src.trust_rating}%
-                    </Badge>
+                  <td className="p-3 font-mono text-xs text-[#706D66] max-w-sm truncate">
+                    {src.url}
                   </td>
                   <td className="p-3">
-                    {src.active ? (
-                      <span className="text-xs font-medium text-emerald-400">● Active</span>
+                    {src.active !== false ? (
+                      <span className="inline-flex items-center space-x-1 text-xs text-[#4A6B4E] font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#4A6B4E]" />
+                        <span>Active</span>
+                      </span>
                     ) : (
-                      <span className="text-xs font-medium text-slate-500">○ Disabled</span>
+                      <span className="inline-flex items-center space-x-1 text-xs text-[#8F8A80] font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8F8A80]" />
+                        <span>Disabled</span>
+                      </span>
                     )}
                   </td>
                   <td className="p-3 text-right">
-                    {src.active && (
+                    {src.active !== false && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-400 hover:text-red-300"
+                        className="text-[#9B3838] hover:bg-[#FDF2F2]"
                         onClick={() => handleDisableSource(src.id)}
                       >
-                        Disable
+                        Deactivate
                       </Button>
                     )}
                   </td>
@@ -164,74 +198,64 @@ export default function SourcesPage() {
         <Modal
           open={showAddModal}
           onClose={() => setShowAddModal(false)}
-          title="Add New Intelligence Source"
+          title="Register Defense Intelligence Source"
         >
-          <form onSubmit={handleAddSubmit} className="space-y-4">
+          <form onSubmit={handleAddSubmit} className="space-y-4 pt-1">
             {modalError && (
-              <div className="bg-red-950/60 border border-red-800 text-red-300 p-3 rounded-lg text-xs">
+              <div className="bg-[#FDF2F2] border border-[#EFC7C7] text-[#9B3838] p-3 rounded text-xs">
                 {modalError}
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase text-slate-400">Source Name</label>
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Source Provider Name
+              </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Reuters Defense Feed"
+                placeholder="e.g. Reuters Defense News, Defense News"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold uppercase text-slate-400">Type</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="rss">RSS Feed</option>
-                  <option value="api">REST API</option>
-                  <option value="scrape">HTML Scrape</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold uppercase text-slate-400">
-                  Trust Rating ({formData.trust_rating}%)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.trust_rating}
-                  onChange={(e) => setFormData({ ...formData, trust_rating: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase text-slate-400">Feed / Article URL</label>
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Protocol Type
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-2.5 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
+              >
+                <option value="rss">RSS / Atom Feed</option>
+                <option value="api">REST API</option>
+                <option value="scrape">HTML Web Scraper</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Target Feed URL
+              </label>
               <input
                 type="url"
                 required
-                placeholder="https://example.com/rss.xml"
+                placeholder="https://feeds.example.com/defense/rss.xml"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none font-mono"
               />
             </div>
 
-            <div className="flex justify-end space-x-2 pt-2">
+            <div className="flex justify-end space-x-2 pt-3 border-t border-[#F0EDE6]">
               <Button variant="outline" size="sm" onClick={() => setShowAddModal(false)}>
                 Cancel
               </Button>
               <Button type="submit" variant="primary" size="sm" disabled={submitting}>
-                {submitting ? "Adding..." : "Add Source"}
+                {submitting ? "Registering..." : "Register Source"}
               </Button>
             </div>
           </form>

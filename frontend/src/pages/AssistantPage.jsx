@@ -1,18 +1,41 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { apiClient } from "../api/client";
-
 import Navbar, { navigate } from "../components/Navbar";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import {
+  AlertCircleIcon,
+  ArrowRightIcon,
+  AssistantIcon,
+  ChevronRightIcon,
+  ExternalLinkIcon,
+  RefreshIcon,
+  ShieldIcon,
+  SourcesIcon,
+} from "../components/ui/Icons";
 
 export default function AssistantPage() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const promptParam = urlParams.get("prompt") || "";
+
   const [sessionId, setSessionId] = useState(() => {
     return localStorage.getItem("osint_assistant_session_id") || null;
   });
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState(promptParam);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, sending]);
 
   // Load message history if session exists
   useEffect(() => {
@@ -28,27 +51,27 @@ export default function AssistantPage() {
     loadHistory();
   }, [sessionId]);
 
-  const handleNewChat = () => {
+  const handleNewSession = () => {
     localStorage.removeItem("osint_assistant_session_id");
     setSessionId(null);
     setMessages([]);
+    setError(null);
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!inputMessage.trim() || sending) return;
+  const handleSendMessage = async (textToSend) => {
+    const text = (textToSend || inputMessage).trim();
+    if (!text || sending) return;
 
-    const userText = inputMessage.trim();
     setInputMessage("");
     setSending(true);
     setError(null);
 
-    // Optimistically add user message
-    const tempUserMsg = { role: "user", text: userText };
-    setMessages((prev) => [...prev, tempUserMsg]);
+    // Optimistically add user query
+    const userMsg = { role: "user", text };
+    setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const response = await apiClient.sendChatMessage(userText, sessionId);
+      const response = await apiClient.sendChatMessage(text, sessionId);
 
       if (response.session_id) {
         setSessionId(response.session_id);
@@ -64,126 +87,205 @@ export default function AssistantPage() {
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
-      setError(err.message || "Failed to send message.");
+      setError(err.message || "Failed to retrieve intelligence response.");
     } finally {
       setSending(false);
     }
   };
 
+  const sampleQueries = [
+    "Summarize recent naval drills and maritime movements in the Baltic Sea.",
+    "What events involve air strikes or missile attacks reported this week?",
+    "Identify which defense agreements or procurements were signed recently.",
+    "Were there any conflicting reports regarding troop casualties or strike locations?",
+  ];
+
+  const getSourceModelTag = (source) => {
+    switch (source) {
+      case "qwen_primary":
+        return { label: "Synthesized via Qwen3-14B", variant: "qwen_primary" };
+      case "openrouter_secondary":
+        return { label: "Synthesized via OpenRouter", variant: "openrouter_secondary" };
+      case "structured_fallback":
+        return { label: "Deterministic Structured Fallback", variant: "structured_fallback" };
+      case "no_match":
+        return { label: "No Matching Evidence Found", variant: "default" };
+      default:
+        return { label: "Grounded Synthesis", variant: "default" };
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col space-y-4">
-        {/* Assistant Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-5 flex flex-col">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
           <div>
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <span>🤖</span> OSINT Intelligence Assistant
+            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+              Analytical Intelligence / RAG Query Workbench
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+              Intelligence Research Assistant
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Ask questions about ingested military events. Answers are strictly grounded in event intelligence.
+            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+              Grounded, verifiable query engine interrogating the ingested military event index. All responses strictly cite member events.
             </p>
           </div>
 
-          <Button variant="outline" size="sm" onClick={handleNewChat}>
-            + New Chat
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" onClick={handleNewSession}>
+              <span>Start New Inquiry</span>
+            </Button>
+          </div>
         </div>
 
-        {/* Chat Thread Container */}
-        <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6 flex flex-col justify-between space-y-4 min-h-[450px]">
-          {/* Messages List */}
-          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+        {/* Workbench Card */}
+        <div className="flex-1 bg-[#FFFFFF] border border-[#E6E2DA] rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between overflow-hidden min-h-[520px]">
+          {/* Messages Trail */}
+          <div className="flex-1 p-5 sm:p-6 overflow-y-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-slate-400 my-auto">
-                <div className="text-4xl">🛰️</div>
-                <h3 className="font-bold text-slate-200">Start a conversation</h3>
-                <p className="text-xs text-slate-500 max-w-sm">
-                  Try asking "What military drills happened recently?" or "Were there any air strikes in the region?"
-                </p>
+              <div className="py-8 max-w-xl mx-auto space-y-5 text-center">
+                <div className="w-10 h-10 mx-auto rounded border border-[#E0D9CD] bg-[#F7F5F0] flex items-center justify-center text-[#858078]">
+                  <AssistantIcon size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-serif font-medium text-base text-[#25231F]">
+                    Analyst Inquiry Workspace
+                  </h3>
+                  <p className="text-xs text-[#706D66] leading-relaxed">
+                    Submit analytical questions regarding events, armed forces, weapons systems, or geopolitical tensions.
+                  </p>
+                </div>
+
+                {/* Pre-configured sample inquiries */}
+                <div className="space-y-2 text-left pt-2">
+                  <span className="text-[11px] font-mono uppercase text-[#858078] block text-center">
+                    Suggested Analyst Queries
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {sampleQueries.map((q, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSendMessage(q)}
+                        className="text-left p-3 rounded border border-[#E6E2DA] bg-[#FCFBF9] hover:bg-[#F2EFE8] text-xs text-[#47423B] transition-colors leading-relaxed"
+                      >
+                        "{q}"
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
-              messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
+              messages.map((msg, idx) => {
+                const isUser = msg.role === "user";
+                const modelMeta = !isUser ? getSourceModelTag(msg.answer_source) : null;
+
+                return (
                   <div
-                    className={`max-w-2xl rounded-xl p-4 text-sm leading-relaxed space-y-2 ${
-                      msg.role === "user"
-                        ? "bg-indigo-600 text-white rounded-br-none"
-                        : "bg-slate-800 border border-slate-700 text-slate-100 rounded-bl-none"
-                    }`}
+                    key={idx}
+                    className={`space-y-1.5 ${isUser ? "pl-8 sm:pl-16" : "pr-4 sm:pr-12"}`}
                   >
-                    <p>{msg.text}</p>
+                    <div className="flex items-center space-x-2 text-[11px] font-mono text-[#858078]">
+                      <span className="uppercase font-semibold text-[#25231F]">
+                        {isUser ? "Analyst Query" : "Intelligence Synthesis"}
+                      </span>
+                      {!isUser && modelMeta && (
+                        <>
+                          <span>·</span>
+                          <Badge variant={modelMeta.variant}>
+                            {modelMeta.label}
+                          </Badge>
+                        </>
+                      )}
+                    </div>
 
-                    {/* Assistant Source Label / Citations */}
-                    {msg.role === "assistant" && (
-                      <div className="pt-2 border-t border-slate-700/60 text-xs space-y-1.5">
-                        {msg.answer_source === "fallback_excerpt" && (
-                          <p className="text-amber-400 font-semibold text-[11px]">
-                            ⚠️ (from stored summary — AI was unavailable)
-                          </p>
-                        )}
-                        {msg.answer_source === "no_match" && (
-                          <p className="text-slate-400 text-[11px]">
-                            ℹ️ No matching intelligence events retrieved.
-                          </p>
-                        )}
+                    <div
+                      className={`p-4 rounded-md text-xs sm:text-sm leading-relaxed ${
+                        isUser
+                          ? "bg-[#F7F5F0] border border-[#E6E2DA] text-[#25231F] font-medium"
+                          : "bg-[#FCFBF9] border border-[#E6E2DA] text-[#302E2A] space-y-3 font-serif"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                        {/* Citation Chips */}
-                        {msg.citations && msg.citations.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                            <span className="text-slate-400 text-[11px]">Citations:</span>
+                      {/* Evidence Citations Footnote */}
+                      {!isUser && msg.citations && msg.citations.length > 0 && (
+                        <div className="pt-3 border-t border-[#E8E4DC] font-sans space-y-2">
+                          <span className="text-[11px] font-mono uppercase text-[#706D66] block">
+                            Evidence Attribution & Citations:
+                          </span>
+                          <div className="flex flex-wrap gap-2">
                             {msg.citations.map((citeId) => (
                               <button
                                 key={citeId}
                                 type="button"
                                 onClick={() => navigate(`/events/${citeId}`)}
-                                className="px-2 py-0.5 rounded bg-indigo-950/80 border border-indigo-700/60 text-indigo-300 hover:text-white text-[11px] font-semibold transition-colors"
+                                className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded border border-[#D5CFC3] bg-[#FFFFFF] hover:bg-[#F2EFE8] text-[11px] font-mono text-[#C96A4A] transition-colors"
                               >
-                                🔗 Event #{citeId.slice(-6)}
+                                <span>Report #{citeId.slice(-6)}</span>
+                                <ChevronRightIcon size={11} />
                               </button>
                             ))}
                           </div>
-                        )}
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
 
             {sending && (
-              <div className="flex justify-start">
-                <div className="bg-slate-800 border border-slate-700 text-slate-400 rounded-xl p-3 text-xs animate-pulse">
-                  Searching vector index & generating grounded answer...
+              <div className="space-y-1.5 pr-8">
+                <span className="text-[11px] font-mono text-[#858078] uppercase">
+                  Processing Query
+                </span>
+                <div className="p-4 rounded-md bg-[#FCFBF9] border border-[#E6E2DA] text-xs text-[#706D66] animate-pulse space-y-1">
+                  <p>Interrogating ChromaDB semantic vector index & synthesizing collective event evidence...</p>
                 </div>
               </div>
             )}
+
+            {error && (
+              <div className="p-3 bg-[#FDF2F2] border border-[#EFC7C7] rounded text-xs text-[#9B3838]">
+                {error}
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
 
-          {error && (
-            <div className="bg-red-950/60 border border-red-800 text-red-300 p-3 rounded-lg text-xs">
-              {error}
-            </div>
-          )}
-
-          {/* Message Input Form */}
-          <form onSubmit={handleSendMessage} className="flex gap-2 pt-2 border-t border-slate-800">
-            <input
-              type="text"
-              placeholder="Ask a question about military intelligence..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              disabled={sending}
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-            />
-            <Button type="submit" variant="primary" disabled={sending || !inputMessage.trim()}>
-              Send
-            </Button>
-          </form>
+          {/* Input Footer */}
+          <div className="p-4 border-t border-[#E6E2DA] bg-[#FCFBF9]">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                placeholder="Ask about monitored military events, participating entities, weapons, or theatres..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                disabled={sending}
+                className="flex-1 bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3.5 py-2 text-xs sm:text-sm text-[#25231F] placeholder-[#8F8A80] focus:border-[#C96A4A] focus:outline-none transition-colors disabled:opacity-50"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                disabled={sending || !inputMessage.trim()}
+              >
+                <span>Query</span>
+                <ArrowRightIcon size={13} />
+              </Button>
+            </form>
+          </div>
         </div>
       </main>
     </div>

@@ -1,11 +1,277 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-warm-bg: #F7F5F0;
+  --color-warm-surface: #FFFFFF;
+  --color-warm-ivory: #FCFBF9;
+  --color-warm-subtle: #F0EDE6;
+  --color-warm-muted: #E8E4DC;
+  
+  --color-warm-border: #E6E2DA;
+  --color-warm-border-strong: #D5D0C5;
+
+  --color-warm-text: #25231F;
+  --color-warm-secondary: #706D66;
+  --color-warm-muted-text: #8F8A80;
+
+  --color-terracotta: #C96A4A;
+  --color-terracotta-hover: #B85C3E;
+  --color-terracotta-subtle: #FBF1ED;
+  --color-terracotta-border: #ECCDC1;
+
+  --color-olive: #4A6B4E;
+  --color-olive-subtle: #F0F5F1;
+  --color-olive-border: #CFDFC8;
+
+  --color-amber-muted: #926322;
+  --color-amber-subtle: #FBF5EB;
+  --color-amber-border: #ECD8B3;
+
+  --color-brick: #9B3838;
+  --color-brick-subtle: #FDF2F2;
+  --color-brick-border: #EFC7C7;
+}
+
 :root {
-  font-family: Inter, system-ui, sans-serif;
-  color: #172033;
-  background: #f8fafc;
+  font-family: var(--font-sans);
+  color: #25231F;
+  background-color: #F7F5F0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
+  background-color: #F7F5F0;
+  color: #25231F;
+  min-height: 100vh;
 }
+
+/* Custom editorial scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F2EFE8;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8D2C6;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #BDB6A8;
+}
+
+/* Subtle focus ring */
+*:focus-visible {
+  outline: 2px solid #C96A4A;
+  outline-offset: 1px;
+}
+
+/* Editorial line clamp */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* -------------------------------------------------------------
+   Dark Mode Eye-Strain Relief Styles
+   ------------------------------------------------------------- */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #141311 !important;
+  color: #EDE8DF !important;
+}
+
+.dark header {
+  background-color: #1A1916 !important;
+  border-color: #2A2824 !important;
+}
+
+.dark .bg-\[\#F7F5F0\] {
+  background-color: #141311 !important;
+}
+
+.dark .bg-\[\#FFFFFF\] {
+  background-color: #1C1B18 !important;
+}
+
+.dark .bg-\[\#FCFBF9\] {
+  background-color: #23221E !important;
+}
+
+.dark .bg-\[\#F9F7F2\] {
+  background-color: #181714 !important;
+}
+
+.dark .bg-\[\#F0EDE6\] {
+  background-color: #282622 !important;
+}
+
+.dark .bg-\[\#F2EFE8\] {
+  background-color: #23221E !important;
+}
+
+.dark .bg-\[\#F5F2ED\] {
+  background-color: #252420 !important;
+}
+
+.dark .bg-\[\#ECE7DF\] {
+  background-color: #2D2B26 !important;
+}
+
+.dark .bg-\[\#EFECE5\] {
+  background-color: #252420 !important;
+}
+
+.dark .border-\[\#E6E2DA\] {
+  border-color: #2C2A25 !important;
+}
+
+.dark .border-\[\#DEDAD2\] {
+  border-color: #312F29 !important;
+}
+
+.dark .border-\[\#EBE7DF\] {
+  border-color: #292823 !important;
+}
+
+.dark .border-\[\#F0EDE6\] {
+  border-color: #262520 !important;
+}
+
+.dark .border-\[\#E8E4DC\] {
+  border-color: #2C2A25 !important;
+}
+
+.dark .border-\[\#D5CFC3\] {
+  border-color: #393630 !important;
+}
+
+.dark .border-\[\#E2DDD3\] {
+  border-color: #2C2A25 !important;
+}
+
+.dark .border-\[\#DDD7CD\] {
+  border-color: #2C2A25 !important;
+}
+
+.dark .border-\[\#E0D9CD\] {
+  border-color: #312F29 !important;
+}
+
+.dark .text-\[\#25231F\] {
+  color: #EDE8DF !important;
+}
+
+.dark .text-\[\#302E2A\] {
+  color: #D6D0C5 !important;
+}
+
+.dark .text-\[\#47423B\] {
+  color: #BDB7AB !important;
+}
+
+.dark .text-\[\#706D66\] {
+  color: #9C968A !important;
+}
+
+.dark .text-\[\#858078\] {
+  color: #8C867B !important;
+}
+
+.dark .text-\[\#8F8A80\] {
+  color: #7B766D !important;
+}
+
+.dark .text-\[\#5C574F\] {
+  color: #B5AFA4 !important;
+}
+
+.dark .hover\:bg-\[\#F7F5F0\]:hover {
+  background-color: #252420 !important;
+}
+
+.dark .hover\:bg-\[\#F2EFE8\]:hover {
+  background-color: #252420 !important;
+}
+
+.dark .hover\:bg-\[\#FCFBF9\]:hover {
+  background-color: #252420 !important;
+}
+
+.dark .hover\:border-\[\#D0C9BC\]:hover {
+  border-color: #4A463E !important;
+}
+
+.dark input, .dark select, .dark textarea {
+  background-color: #1A1916 !important;
+  color: #EDE8DF !important;
+  border-color: #33312C !important;
+}
+
+.dark .bg-\[\#FBF1ED\] {
+  background-color: #341F18 !important;
+}
+
+.dark .border-\[\#ECCDC1\] {
+  border-color: #D97757 !important;
+}
+
+.dark .bg-\[\#FDF2F2\] {
+  background-color: #2E1818 !important;
+}
+
+.dark .border-\[\#EFC7C7\] {
+  border-color: #522525 !important;
+}
+
+.dark .bg-\[\#F0F5F1\] {
+  background-color: #19271C !important;
+}
+
+.dark .border-\[\#CFDFC8\] {
+  border-color: #2D4732 !important;
+}
+
+.dark .bg-\[\#FBF5EB\] {
+  background-color: #2E2214 !important;
+}
+
+.dark .border-\[\#ECD8B3\] {
+  border-color: #543E20 !important;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #6E695F !important;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #141311;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #2E2C27;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #423F39;
+}
+

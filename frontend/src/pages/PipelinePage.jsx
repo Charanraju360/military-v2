@@ -1,11 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { apiClient } from "../api/client";
-
 import Navbar, { navigate } from "../components/Navbar";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
+import {
+  AlertCircleIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  PipelineIcon,
+  RefreshIcon,
+  ShieldIcon,
+  TrashIcon,
+} from "../components/ui/Icons";
 
 export default function PipelinePage() {
   const [status, setStatus] = useState(null);
@@ -22,6 +30,7 @@ export default function PipelinePage() {
   const [expandedLogId, setExpandedLogId] = useState(null);
 
   const pollTimerRef = useRef(null);
+  const wasRunningRef = useRef(false);
 
   const loadStatusAndLogs = async () => {
     try {
@@ -31,13 +40,11 @@ export default function PipelinePage() {
       const logsData = await apiClient.fetchPipelineLogs();
       setLogs(logsData.items || []);
     } catch (err) {
-      setError(err.message || "Failed to load pipeline state.");
+      setError(err.message || "Failed to load pipeline diagnostic state.");
     } finally {
       setLoading(false);
     }
   };
-
-  const wasRunningRef = useRef(false);
 
   useEffect(() => {
     loadStatusAndLogs();
@@ -67,7 +74,7 @@ export default function PipelinePage() {
       await apiClient.runPipeline();
       await loadStatusAndLogs();
     } catch (err) {
-      setError(err.message || "Failed to start pipeline run.");
+      setError(err.message || "Failed to initiate pipeline execution.");
     } finally {
       setActionLoading(false);
     }
@@ -80,9 +87,8 @@ export default function PipelinePage() {
     try {
       await apiClient.cleanDatabase();
       await loadStatusAndLogs();
-      alert("Database cleaned successfully. Sources and pipeline status retained.");
     } catch (err) {
-      setError(err.message || "Failed to clean database.");
+      setError(err.message || "Failed to wipe database collections.");
     } finally {
       setActionLoading(false);
     }
@@ -90,133 +96,176 @@ export default function PipelinePage() {
 
   const isRunning = status?.running;
 
-  const phaseNames = ["clean_db", "collect", "clean", "filter", "embed", "cluster", "summarize"];
+  const phaseNames = [
+    { id: "clean_db", label: "1. Database Wipe", desc: "Wipes volatile collections" },
+    { id: "collect", label: "2. News Ingestion", desc: "Fetches RSS/API feeds" },
+    { id: "clean", label: "3. Text Cleaning", desc: "HTML stripping & boilerplate" },
+    { id: "filter", label: "4. Military Topic Filter", desc: "Enforces defense taxonomy" },
+    { id: "embed", label: "5. Vector Embedding", desc: "Batched dense embeddings" },
+    { id: "cluster", label: "6. Hybrid Clustering", desc: "Semantic/Entity/Time clustering" },
+    { id: "summarize", label: "7. Event Synthesis", desc: "Qwen3-14B multi-source summary" },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Header & Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-7">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4 pb-4 border-b border-[#E6E2DA]">
           <div>
-            <h1 className="text-2xl font-extrabold text-white">Pipeline Control & Status</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Trigger intelligence ingestion runs, wipe data, and monitor live phase status.
+            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+              Operational Diagnostics / Ingestion Pipeline
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+              Pipeline Control & Telemetry
+            </h1>
+            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+              Manual pipeline trigger, database state management, and real-time execution telemetry across all processing stages.
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 shrink-0">
             <Button
-              variant="danger"
+              variant="outline"
+              size="sm"
               disabled={isRunning || actionLoading}
               onClick={() => setShowCleanConfirm(true)}
             >
-              🧹 Clean Database
+              <TrashIcon size={12} className="text-[#9B3838]" />
+              <span>Clean Database</span>
             </Button>
             <Button
               variant="primary"
+              size="sm"
               disabled={isRunning || actionLoading}
               onClick={() => setShowRunConfirm(true)}
             >
-              🚀 Run Pipeline
+              <PipelineIcon size={13} />
+              <span>Execute Pipeline Run</span>
             </Button>
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-950/60 border border-red-800 text-red-300 p-4 rounded-xl text-sm">
-            <p className="font-bold">Pipeline Error</p>
-            <p className="mt-0.5">{error}</p>
+          <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-4 text-xs text-[#9B3838] space-y-1">
+            <span className="font-semibold">Operational Error:</span> {error}
           </div>
         )}
 
         {/* Live Status Section */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <span>📡</span> Live Run Status
-            </h2>
+        <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F0EDE6] pb-3">
             <div className="flex items-center space-x-2">
-              {isRunning ? (
-                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/60 animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                  Run In Progress ({status?.current_phase || "initializing"})
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  Idle (Ready)
-                </span>
-              )}
+              <span className="text-xs font-mono uppercase text-[#706D66]">
+                Telemetry Monitor
+              </span>
+              <span>·</span>
+              <span className="text-sm font-semibold text-[#25231F]">
+                {isRunning ? (
+                  <span className="text-[#C96A4A] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#C96A4A] animate-pulse" />
+                    Executing Run ({status?.current_phase || "initializing"} stage)
+                  </span>
+                ) : (
+                  <span className="text-[#4A6B4E] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#4A6B4E]" />
+                    Pipeline Idle / Ready for Execution
+                  </span>
+                )}
+              </span>
             </div>
+
+            {status?.current_run_id && (
+              <span className="text-[11px] font-mono text-[#858078]">
+                ACTIVE RUN ID: {status.current_run_id}
+              </span>
+            )}
           </div>
 
-          {/* Phase Progress Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {phaseNames.map((pName) => {
+          {/* Phase Progress Sequence Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2.5">
+            {phaseNames.map((phase) => {
               const emittedPhases = status?.phases_so_far || [];
-              const phaseData = emittedPhases.find((p) => p.phase === pName);
-              const isCurrent = status?.current_phase === pName && isRunning;
-              const isDone = Boolean(phaseData && (phaseData.status === "done" || phaseData.status === "done_with_errors"));
+              const phaseData = emittedPhases.find((p) => p.phase === phase.id);
+              const isCurrent = status?.current_phase === phase.id && isRunning;
+              const isDone = Boolean(
+                phaseData &&
+                  (phaseData.status === "done" ||
+                    phaseData.status === "done_with_errors")
+              );
               const isFailed = Boolean(phaseData && phaseData.status === "failed");
 
               return (
                 <div
-                  key={pName}
-                  className={`border rounded-lg p-3 space-y-2 transition-all ${
+                  key={phase.id}
+                  className={`rounded border p-3 text-xs space-y-2 transition-all ${
                     isCurrent
-                      ? "bg-indigo-950/40 border-indigo-500 ring-1 ring-indigo-500"
+                      ? "bg-[#FBF1ED] dark:bg-[#341F18] border-[#ECCDC1] dark:border-[#D97757] ring-1 ring-[#C96A4A]/40 dark:ring-[#D97757]/60"
                       : isFailed
-                      ? "bg-red-950/30 border-red-800"
+                      ? "bg-[#FDF2F2] dark:bg-[#2E1818] border-[#EFC7C7] dark:border-[#522525]"
                       : isDone
-                      ? "bg-slate-800/60 border-slate-700"
-                      : "bg-slate-950/40 border-slate-800/60 opacity-60"
+                      ? "bg-[#FCFBF9] dark:bg-[#1E241E] border-[#DEDAD2] dark:border-[#2A3E2C]"
+                      : "bg-[#F7F5F0] dark:bg-[#1C1B18] border-[#E8E4DC] dark:border-[#2C2A25] opacity-70"
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs font-bold uppercase">
-                    <span className={isCurrent ? "text-indigo-300" : "text-slate-300"}>
-                      {pName.replace("_", " ")}
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] uppercase font-semibold text-[#706D66] dark:text-[#A8A297]">
+                      {phase.id}
                     </span>
                     {isCurrent ? (
-                      <span className="text-indigo-400 animate-pulse">Running...</span>
+                      <span className="text-[10px] font-mono text-[#C96A4A] dark:text-[#FF8A65] font-semibold animate-pulse">
+                        RUNNING
+                      </span>
                     ) : isDone ? (
-                      <span className="text-emerald-400">✓ Done</span>
+                      <span className="text-[10px] font-mono text-[#4A6B4E] dark:text-[#81C784] font-semibold">
+                        DONE
+                      </span>
                     ) : isFailed ? (
-                      <span className="text-red-400">✗ Failed</span>
+                      <span className="text-[10px] font-mono text-[#9B3838] dark:text-[#E57373] font-semibold">
+                        FAILED
+                      </span>
                     ) : (
-                      <span className="text-slate-600">Pending</span>
+                      <span className="text-[10px] font-mono text-[#8F8A80] dark:text-[#7A756B]">
+                        PENDING
+                      </span>
                     )}
                   </div>
 
-                  {/* Counts & Data Summary */}
+                  <p className={`text-[11px] font-medium leading-tight ${
+                    isCurrent
+                      ? "text-[#25231F] dark:text-[#FFEBE0]"
+                      : "text-[#25231F] dark:text-[#EDE8DF]"
+                  }`}>
+                    {phase.desc}
+                  </p>
+
+                  {/* Phase Metrics */}
                   {phaseData && (
-                    <div className="text-[11px] text-slate-300 space-y-0.5 pt-1 border-t border-slate-800/60 font-mono">
-                      {pName === "clean_db" && (
-                        <p>Cleaned all temporary collections</p>
+                    <div className="pt-1.5 border-t border-[#E8E4DC] font-mono text-[10px] text-[#5C574F] space-y-0.5">
+                      {phase.id === "clean_db" && <p>Wiped stores</p>}
+                      {phase.id === "collect" && (
+                        <p>+{phaseData.new || 0} / dupe:{phaseData.skipped_dupes || 0}</p>
                       )}
-                      {pName === "collect" && (
-                        <p>New: {phaseData.new || 0} | Dupes: {phaseData.skipped_dupes || 0}</p>
+                      {phase.id === "clean" && (
+                        <p>ok:{phaseData.cleaned || 0} / rej:{phaseData.rejected_short || 0}</p>
                       )}
-                      {pName === "clean" && (
-                        <p>Cleaned: {phaseData.cleaned || 0} | Short: {phaseData.rejected_short || 0}</p>
+                      {phase.id === "filter" && (
+                        <p>ok:{phaseData.filtered_ok || 0} / off:{phaseData.rejected_offtopic || 0}</p>
                       )}
-                      {pName === "filter" && (
-                        <p>OK: {phaseData.filtered_ok || 0} | Rejected: {phaseData.rejected_offtopic || 0}</p>
+                      {phase.id === "embed" && (
+                        <p>vec:{phaseData.processed || 0} / err:{phaseData.failed || 0}</p>
                       )}
-                      {pName === "embed" && (
-                        <p>Processed: {phaseData.processed || 0} | Failed: {phaseData.failed || 0}</p>
+                      {phase.id === "cluster" && (
+                        <p>evt:{phaseData.events_created || 0} / sgl:{phaseData.singleton_events || 0}</p>
                       )}
-                      {pName === "cluster" && (
-                        <p>Events: {phaseData.events_created || 0} | Singletons: {phaseData.singleton_events || 0}</p>
-                      )}
-                      {pName === "summarize" && (
-                        <p>Summarized: {phaseData.summarized || 0} | Fallback: {phaseData.fallback_used || 0}</p>
+                      {phase.id === "summarize" && (
+                        <p>sum:{phaseData.summarized || 0} / fbk:{phaseData.fallback_used || 0}</p>
                       )}
 
                       {phaseData.errors && phaseData.errors.length > 0 && (
-                        <p className="text-red-400 font-sans mt-1">
-                          ⚠️ {phaseData.errors.length} error(s)
+                        <p className="text-[#9B3838] font-sans">
+                          {phaseData.errors.length} error(s)
                         </p>
                       )}
                     </div>
@@ -225,15 +274,27 @@ export default function PipelinePage() {
               );
             })}
           </div>
-        </div>
+        </section>
 
-        {/* Historical Logs Section */}
-        <div className="space-y-4">
-          <h2 className="text-base font-bold text-slate-200">Historical Run Logs</h2>
+        {/* Historical Pipeline Logs Section */}
+        <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#F0EDE6]">
+            <div>
+              <h2 className="text-base font-serif font-medium text-[#25231F]">
+                Historical Run Telemetry Logs
+              </h2>
+              <p className="text-xs text-[#706D66]">
+                Immutable execution records persisted to MongoDB pipeline_logs collection.
+              </p>
+            </div>
+            <span className="text-xs font-mono text-[#858078]">
+              {logs.length} logged run(s)
+            </span>
+          </div>
 
           {logs.length === 0 ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center text-slate-400 text-sm">
-              No historical pipeline logs found.
+            <div className="text-center py-8 text-xs text-[#706D66]">
+              No previous pipeline runs recorded.
             </div>
           ) : (
             <div className="space-y-3">
@@ -244,41 +305,54 @@ export default function PipelinePage() {
                 return (
                   <div
                     key={log.run_id}
-                    className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3"
+                    className="border border-[#E6E2DA] rounded p-4 space-y-3 bg-[#FCFBF9]"
                   >
                     <div
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={() => setExpandedLogId(isExpanded ? null : log.run_id)}
+                      className="flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none"
+                      onClick={() =>
+                        setExpandedLogId(isExpanded ? null : log.run_id)
+                      }
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 text-xs">
                         <Badge variant={isSuccess ? "high_trust" : "low_trust"}>
                           {log.overall_status?.toUpperCase() || "UNKNOWN"}
                         </Badge>
-                        <span className="font-mono text-xs text-slate-300">Run #{log.run_id.slice(-8)}</span>
-                        <span className="text-xs text-slate-500">
+                        <span className="font-mono text-[#25231F]">
+                          Run #{log.run_id.slice(-8)}
+                        </span>
+                        <span className="text-[#706D66]">
                           Started: {new Date(log.started_at).toLocaleString()}
                         </span>
                       </div>
 
-                      <button type="button" className="text-xs text-indigo-400 font-semibold">
-                        {isExpanded ? "Collapse ▲" : "Expand Details ▼"}
-                      </button>
+                      <span className="text-xs font-medium text-[#C96A4A] hover:text-[#B85C3E]">
+                        {isExpanded ? "Hide JSON Diagnostics ▲" : "View Phase Diagnostics ▼"}
+                      </span>
                     </div>
 
-                    {/* Expandable Phase Breakdown */}
                     {isExpanded && (
-                      <div className="pt-3 border-t border-slate-800 space-y-2">
-                        <h4 className="text-xs font-semibold uppercase text-slate-400">Phase Details</h4>
-                        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs space-y-1 max-h-60 overflow-y-auto">
+                      <div className="pt-3 border-t border-[#EBE7DF] space-y-2">
+                        <h4 className="text-[11px] font-mono uppercase text-[#706D66]">
+                          Phase Breakdown Trace
+                        </h4>
+                        <div className="bg-[#F7F5F0] p-3 rounded border border-[#E6E2DA] font-mono text-[11px] space-y-1.5 max-h-60 overflow-y-auto">
                           {log.phases && log.phases.length > 0 ? (
                             log.phases.map((p, idx) => (
-                              <div key={idx} className="border-b border-slate-800/60 pb-1 text-slate-300">
-                                <span className="text-indigo-400 font-bold">[{p.phase}]</span> status={p.status}{" "}
+                              <div
+                                key={idx}
+                                className="border-b border-[#E8E4DC] pb-1 text-[#302E2A]"
+                              >
+                                <span className="text-[#C96A4A] font-semibold">
+                                  [{p.phase}]
+                                </span>{" "}
+                                status={p.status}{" "}
                                 {JSON.stringify(p)}
                               </div>
                             ))
                           ) : (
-                            <span className="text-slate-500">No phase breakdown emitted.</span>
+                            <span className="text-[#858078]">
+                              No detailed phase telemetry emitted for this run.
+                            </span>
                           )}
                         </div>
                       </div>
@@ -288,25 +362,31 @@ export default function PipelinePage() {
               })}
             </div>
           )}
-        </div>
+        </section>
 
         {/* Confirmation Modal — Run Pipeline */}
         <Modal
           open={showRunConfirm}
           onClose={() => setShowRunConfirm(false)}
-          title="Confirm Run Pipeline"
+          title="Confirm Pipeline Ingestion Run"
         >
-          <div className="space-y-4">
-            <p className="text-sm text-slate-300">
-              Running the pipeline will wipe all current articles, events, vectors, and chat history (retaining only news sources), then ingest and process new intelligence.
+          <div className="space-y-4 pt-1">
+            <p className="text-xs text-[#47423B] leading-relaxed">
+              Executing the pipeline wipes the database first (excluding configured intelligence sources), collects fresh articles from active feeds, applies the military topic filter, computes vector embeddings, clusters events, and generates collective summaries.
             </p>
-            <p className="text-sm font-semibold text-amber-400">Are you sure you want to proceed?</p>
-            <div className="flex justify-end space-x-2 pt-2">
-              <Button variant="outline" size="sm" onClick={() => setShowRunConfirm(false)}>
+            <div className="p-3 bg-[#FBF5EB] border border-[#ECD8B3] rounded text-xs text-[#8C5E1B]">
+              <span className="font-semibold">Notice:</span> Existing articles, clustered events, and chat sessions will be refreshed. News source configurations remain permanently preserved.
+            </div>
+            <div className="flex justify-end space-x-2 pt-2 border-t border-[#F0EDE6]">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowRunConfirm(false)}
+              >
                 Cancel
               </Button>
               <Button variant="primary" size="sm" onClick={handleRunPipeline}>
-                Confirm Run Pipeline
+                Proceed with Run
               </Button>
             </div>
           </div>
@@ -316,15 +396,21 @@ export default function PipelinePage() {
         <Modal
           open={showCleanConfirm}
           onClose={() => setShowCleanConfirm(false)}
-          title="Confirm Clean Database"
+          title="Confirm Database Wipe"
         >
-          <div className="space-y-4">
-            <p className="text-sm text-slate-300">
-              Cleaning the database will permanently delete all ingested articles, events, entities, vector stores, and chat history. News sources will remain intact.
+          <div className="space-y-4 pt-1">
+            <p className="text-xs text-[#47423B] leading-relaxed">
+              Cleaning the database permanently purges all ingested articles, extracted entities, clustered events, vector stores, and assistant threads. Configured intelligence sources are preserved.
             </p>
-            <p className="text-sm font-semibold text-red-400">This action cannot be undone. Continue?</p>
-            <div className="flex justify-end space-x-2 pt-2">
-              <Button variant="outline" size="sm" onClick={() => setShowCleanConfirm(false)}>
+            <div className="p-3 bg-[#FDF2F2] border border-[#EFC7C7] rounded text-xs text-[#9B3838]">
+              <span className="font-semibold">Destructive Action:</span> Clustered intelligence data cannot be recovered once purged.
+            </div>
+            <div className="flex justify-end space-x-2 pt-2 border-t border-[#F0EDE6]">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCleanConfirm(false)}
+              >
                 Cancel
               </Button>
               <Button variant="danger" size="sm" onClick={handleCleanDatabase}>

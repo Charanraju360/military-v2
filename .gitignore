@@ -33,7 +33,8 @@ codex.md
 
 # Temporary test data and caches
 chroma_data/
-backend/scratch_test_embed.py
+backend/scratch_*.py
+scratch_*.py
 military_osint_documentation_pack.zip
 military_osint_documentation_pack/
 

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 
 export default function Button({
   children,
@@ -6,29 +6,36 @@ export default function Button({
   size = "md",
   disabled = false,
   className = "",
+  type = "button",
   ...props
 }) {
-  const base = "inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  
+  const base =
+    "inline-flex items-center justify-center font-medium rounded-md transition-colors select-none focus:outline-none focus:ring-2 focus:ring-[#C96A4A]/25 disabled:opacity-40 disabled:cursor-not-allowed";
+
   const variants = {
-    primary: "bg-indigo-600 hover:bg-indigo-500 text-white focus:ring-indigo-500 shadow-md shadow-indigo-600/20",
-    secondary: "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 focus:ring-slate-500",
-    danger: "bg-red-600 hover:bg-red-500 text-white focus:ring-red-500 shadow-md shadow-red-600/20",
-    outline: "bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700 focus:ring-slate-500",
-    ghost: "bg-transparent hover:bg-slate-800/60 text-slate-300",
+    primary:
+      "bg-[#C96A4A] hover:bg-[#B85C3E] text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-[#BA5F40]",
+    secondary:
+      "bg-[#FFFFFF] hover:bg-[#F4F1EA] text-[#302D27] border border-[#D8D2C6] shadow-[0_1px_1px_rgba(0,0,0,0.02)]",
+    danger:
+      "bg-[#9B3838] hover:bg-[#862E2E] text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-[#8B3030]",
+    outline:
+      "bg-transparent hover:bg-[#ECE8DF] text-[#47423B] border border-[#D5CFC3]",
+    ghost:
+      "bg-transparent hover:bg-[#ECE8DF] text-[#47423B]",
   };
 
   const sizes = {
-    sm: "px-2.5 py-1.5 text-xs",
-    md: "px-4 py-2 text-sm",
-    lg: "px-5 py-2.5 text-base",
+    sm: "px-2.5 py-1 text-xs gap-1.5",
+    md: "px-3.5 py-1.5 text-xs sm:text-sm gap-2",
+    lg: "px-4 py-2 text-sm gap-2",
   };
 
   return (
     <button
-      type="button"
+      type={type}
       disabled={disabled}
-      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${base} ${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${className}`}
       {...props}
     >
       {children}

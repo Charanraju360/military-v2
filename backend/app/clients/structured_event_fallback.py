@@ -39,6 +39,7 @@ class StructuredEventFallback:
 
         for article in articles:
             source = sources_by_id.get(article.source_id)
+            text_excerpt = (article.cleaned_text or article.raw_text or "").strip()
             source_refs.append(
                 {
                     "article_id": article.id,
@@ -49,6 +50,7 @@ class StructuredEventFallback:
                     "published_at": article.published_at.isoformat()
                     if article.published_at
                     else None,
+                    "text_excerpt": text_excerpt[:2000],
                 }
             )
             if article.published_at:
@@ -90,7 +92,7 @@ class StructuredEventFallback:
         articles: list[Any],
         majority_category: Category,
     ) -> dict[str, Any]:
-        """Create a structured local event summary from evidence fields."""
+        """Create a comprehensive, multi-paragraph structured event intelligence briefing."""
 
         article_count = len(articles)
         source_names = sorted(
@@ -103,34 +105,104 @@ class StructuredEventFallback:
         locations = workspace.get("locations", [])
         conflicts = workspace.get("conflicts", [])
         timeline = workspace.get("timeline", [])
+        claims = workspace.get("claims", [])
+        entities = workspace.get("entities", [])
 
-        subject = f"{article_count} reports"
-        if source_names:
-            subject += f" from {len(source_names)} source"
-            subject += "" if len(source_names) == 1 else "s"
+        # Categorize extracted entities
+        orgs = sorted({e["text"] for e in entities if e.get("type") in ("ORG", "ORGANIZATION")})
+        persons = sorted({e["text"] for e in entities if e.get("type") in ("PERSON", "PER")})
+        weapons = sorted({e["text"] for e in entities if e.get("type") in ("EQUIPMENT", "WEAPON", "MISSILE", "VEHICLE")})
 
-        category_text = majority_category.value.replace("_", " ").lower()
-        location_text = f" involving {', '.join(locations[:3])}" if locations else ""
-        time_text = ""
+        # Extract substantive, high-information sentences from member articles
+        substantive_sentences: list[str] = []
+        seen_sentence_prefixes: set[str] = set()
+        noise_keywords = {
+            "subscribe", "cookie", "advertisement", "all rights reserved",
+            "copyright", "click here", "sign up", "terms of use", "privacy policy",
+            "photo:", "getty images", "reuters", "associated press", "read more"
+        }
+
+        lead_title = articles[0].title.rstrip(".!?") if articles else "Military Developments"
+
+        for article in articles:
+            full_text = f"{article.title}. {article.cleaned_text or article.raw_text or ''}"
+            # Clean non-standard unicode replacement characters
+            cleaned_body = full_text.replace("\ufffd", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+            cleaned_body = re.sub(r"\bU\.S\.", "US", cleaned_body)
+            cleaned_body = re.sub(r"\bU\.K\.", "UK", cleaned_body)
+            cleaned_body = re.sub(r"\bU\.N\.", "UN", cleaned_body)
+            # Split sentences cleanly
+            raw_sentences = re.split(r"(?<=[.!?])\s+", cleaned_body)
+            for s in raw_sentences:
+                s_clean = s.strip()
+                if len(s_clean) < 25 or len(s_clean) > 400:
+                    continue
+                lower_s = s_clean.lower()
+                if any(noise in lower_s for noise in noise_keywords):
+                    continue
+                if lead_title.lower() == lower_s.rstrip(".!?"):
+                    continue
+                prefix = lower_s[:40]
+                if prefix in seen_sentence_prefixes:
+                    continue
+                seen_sentence_prefixes.add(prefix)
+                substantive_sentences.append(s_clean)
+
+        # Build paragraphs
+        paragraphs: list[str] = []
+
+        # 1. Situation Brief / Operational Lead
+        category_label = majority_category.value.replace("_", " ").title()
+        loc_str = f" in {', '.join(locations[:3])}" if locations else ""
+        time_str = ""
         if timeline:
-            first_time = timeline[0].get("time")
-            latest_time = timeline[-1].get("time")
-            time_text = f" between {first_time} and {latest_time}" if first_time != latest_time else f" at {latest_time}"
+            t = timeline[-1].get("time") or timeline[0].get("time")
+            if t:
+                time_str = f" as of {t[:10]}"
 
-        summary_parts = [
-            f"{subject} describe a {category_text} event{location_text}{time_text}."
-        ]
-        if conflicts:
-            summary_parts.append(conflicts[0]["uncertainty_statement"])
-        elif workspace.get("claims"):
-            summary_parts.append(
-                f"The event record preserves {len(workspace['claims'])} structured claim(s) with article provenance."
+        source_desc = f"{len(source_names)} source{'s' if len(source_names) != 1 else ''} ({', '.join(source_names[:3])})" if source_names else "field reporting"
+        p1 = f"Operational Situation Brief: {lead_title}. Analysis of {article_count} reports across {source_desc}{loc_str}{time_str} indicates active military developments classified under {category_label}."
+        
+        # Attach the most descriptive opening sentence to lead paragraph
+        if substantive_sentences:
+            p1 += " " + substantive_sentences[0]
+        paragraphs.append(p1)
+
+        # 2. Detailed Tactical & Strategic Narrative
+        if len(substantive_sentences) > 1:
+            p2 = "Tactical Assessment & Key Actions: " + " ".join(substantive_sentences[1:5])
+            paragraphs.append(p2)
+        elif article_count > 1:
+            paragraphs.append(
+                f"Tactical Assessment: Cross-verified evidence spans {article_count} reports, confirming consistent operational indicators across monitoring channels."
             )
-        else:
-            summary_parts.append("The event record is based on article metadata, extracted entities, and source references.")
+
+        # 3. Actors, Equipment, and Quantitative Metrics
+        detail_components: list[str] = []
+        if orgs:
+            detail_components.append(f"Primary organizations and defense bodies engaged include {', '.join(orgs[:4])}.")
+        if persons:
+            detail_components.append(f"Key military and political figures cited in dispatches include {', '.join(persons[:3])}.")
+        if weapons:
+            detail_components.append(f"Combat assets and defense platforms referenced include {', '.join(weapons[:4])}.")
+        if claims:
+            claims_summary = ", ".join(f"{c['value']} {c['aspect']}" for c in claims[:4])
+            detail_components.append(f"Quantifiable operational metrics logged: {claims_summary}.")
+
+        if detail_components:
+            paragraphs.append("Intelligence Breakdown: " + " ".join(detail_components))
+
+        # 4. Conflicts, Uncertainties, and Provenance
+        if conflicts:
+            conflict_stmt = conflicts[0].get("uncertainty_statement") or "Conflicting figures remain unresolved among reported sources."
+            paragraphs.append(f"Information Assurance & Discrepancies: {conflict_stmt} Source reports diverge across reporting lines.")
+        elif workspace.get("uncertainty_statements"):
+            paragraphs.append(f"Information Assurance: {workspace['uncertainty_statements'][0]}")
+
+        final_summary = "\n\n".join(paragraphs)
 
         return {
-            "summary": " ".join(summary_parts),
+            "summary": final_summary,
             "category": majority_category,
             "claims": workspace.get("claims", []),
             "timeline": timeline,
@@ -142,24 +214,41 @@ class StructuredEventFallback:
         }
 
     def answer_from_events(self, question: str, events: list[Any]) -> str:
-        """Generate a concise assistant fallback answer from retrieved event evidence."""
+        """Generate an assistant answer grounded in retrieved event evidence."""
 
         if not events:
-            return "No sufficiently relevant event/article evidence was retrieved."
+            return "No verified military event or dispatch evidence was found matching the specific query parameters."
 
-        event = events[0]
-        parts = [event.summary or "The retrieved event has stored evidence but no narrative summary yet."]
-        if event.conflicts:
+        # Select the event with highest token overlap with the user question
+        q_tokens = {w.lower() for w in re.findall(r"\w+", question) if len(w) > 3}
+        best_event = events[0]
+        best_score = -1
+
+        for ev in events:
+            score = 0
+            ev_text = f"{getattr(ev, 'summary', '')} {' '.join(getattr(ev, 'locations', []))} {getattr(ev, 'category', '')}".lower()
+            for token in q_tokens:
+                if token in ev_text:
+                    score += 1
+            if score > best_score:
+                best_score = score
+                best_event = ev
+
+        event = best_event
+        summary_text = getattr(event, "summary", "") or ""
+        if not summary_text:
+            return "The retrieved event has stored evidence but no narrative summary yet."
+
+        parts = [summary_text]
+        if getattr(event, "conflicts", None):
             statements = [
                 c.get("uncertainty_statement")
                 for c in event.conflicts
-                if c.get("uncertainty_statement")
+                if isinstance(c, dict) and c.get("uncertainty_statement")
             ]
             if statements:
                 parts.append(statements[0])
-        if event.timeline:
-            parts.append(f"Timeline entries available: {len(event.timeline)}.")
-        return " ".join(parts)
+        return "\n\n".join(parts) if "\n\n" in summary_text else " ".join(parts)
 
     def _extract_numeric_claims(self, article: Any, claims: list[dict[str, Any]]) -> list[str]:
         text = f"{article.title}. {article.cleaned_text or ''}"

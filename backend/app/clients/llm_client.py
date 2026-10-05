@@ -38,7 +38,7 @@ class LLMClient:
         ]
 
     async def classify_topic(
-        self, title: str, text: str, timeout: float = 6.0
+        self, title: str, text: str, timeout: float | None = None
     ) -> tuple[bool, Category | None]:
         """Classify ambiguous articles using Qwen then OpenRouter."""
 
@@ -59,7 +59,7 @@ class LLMClient:
         return False, None
 
     async def synthesize_event(
-        self, workspace: dict[str, Any], timeout: float = 7.0
+        self, workspace: dict[str, Any], timeout: float | None = None
     ) -> tuple[dict[str, Any] | None, SummarySource | None]:
         """Generate structured event synthesis with provider fallback."""
 
@@ -83,7 +83,7 @@ class LLMClient:
         return None, None
 
     async def generate_grounded_answer(
-        self, question: str, event_evidence: list[dict[str, Any]], timeout: float = 7.0
+        self, question: str, event_evidence: list[dict[str, Any]], timeout: float | None = None
     ) -> tuple[str | None, list[str], AnswerSource | None]:
         """Generate an event-grounded assistant answer using provider fallback."""
 
@@ -115,10 +115,10 @@ class LLMClient:
                 continue
             provider = dict(provider)
             configured = float(provider.get("timeout") or 30.0)
-            if configured > 0:
-                provider["timeout"] = configured
-            elif override_timeout is not None:
+            if override_timeout is not None:
                 provider["timeout"] = float(override_timeout)
+            elif configured > 0:
+                provider["timeout"] = configured
             else:
                 provider["timeout"] = 30.0
             providers.append(provider)

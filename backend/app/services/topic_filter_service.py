@@ -184,7 +184,6 @@ class TopicFilterService:
                                 is_military, llm_category = await self._llm_client.classify_topic(
                                     title=art.title,
                                     text=art.cleaned_text or "",
-                                    timeout=8.0,
                                 )
 
                                 if is_military and llm_category is not None:

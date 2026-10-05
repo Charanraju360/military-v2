@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
-
 import Navbar, { navigate } from "../components/Navbar";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import {
+  CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  FilterIcon,
+  LayersIcon,
+  RefreshIcon,
+  SearchIcon,
+} from "../components/ui/Icons";
 
 export default function EventFeedPage() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialCategory = urlParams.get("category") || "";
+
   const [events, setEvents] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -14,22 +25,37 @@ export default function EventFeedPage() {
   const [error, setError] = useState(null);
 
   // Filters
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(initialCategory);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [keyword, setKeyword] = useState("");
+
+  const pageSize = 10;
 
   const loadEvents = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = { page, page_size: 12 };
+      const params = { page, page_size: pageSize };
       if (category) params.category = category;
       if (dateFrom) params.date_from = new Date(dateFrom).toISOString();
       if (dateTo) params.date_to = new Date(dateTo).toISOString();
 
       const data = await apiClient.fetchEvents(params);
-      setEvents(data.items || []);
-      setTotal(data.total || 0);
+      let items = data.items || [];
+
+      // Optional client-side keyword filtering if requested on feed
+      if (keyword.trim()) {
+        const lower = keyword.toLowerCase();
+        items = items.filter(
+          (it) =>
+            (it.summary && it.summary.toLowerCase().includes(lower)) ||
+            (it.category && it.category.toLowerCase().includes(lower))
+        );
+      }
+
+      setEvents(items);
+      setTotal(data.total || items.length);
     } catch (err) {
       setError(err.message || "Failed to load events.");
     } finally {
@@ -43,64 +69,117 @@ export default function EventFeedPage() {
 
   const formatDate = (isoString) => {
     if (!isoString) return "N/A";
-    return new Date(isoString).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    try {
+      return new Date(isoString).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (_) {
+      return isoString;
+    }
   };
 
   const categories = [
-    "ATTACK",
-    "GEOPOLITICS",
-    "PEACE_DEAL",
-    "AGREEMENT",
-    "DRILL",
-    "OTHER_MILITARY",
+    { value: "", label: "All Classifications" },
+    { value: "ATTACK", label: "Direct Action / Attacks" },
+    { value: "DRILL", label: "Military Drills & Exercises" },
+    { value: "GEOPOLITICS", label: "Geopolitical Developments" },
+    { value: "AGREEMENT", label: "Defense Pacts & Procurements" },
+    { value: "PEACE_DEAL", label: "Ceasefire & Negotiations" },
+    { value: "OTHER_MILITARY", label: "General Military Activity" },
   ];
 
+  const handleResetFilters = () => {
+    setCategory("");
+    setDateFrom("");
+    setDateTo("");
+    setKeyword("");
+    setPage(1);
+    window.history.replaceState({}, "", "/events");
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
+        {/* Page Context Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Military Intelligence Feed
+            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+              Intelligence Repository / Event Feed
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+              Clustered Intelligence Events
             </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Live clustered military events ingested from open-source OSINT intelligence feeds.
+            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+              Multi-source synthesized event briefs generated from open-source military articles.
             </p>
           </div>
-          <Button variant="primary" onClick={() => navigate("/pipeline")}>
-            ⚙️ Pipeline Control
-          </Button>
+
+          <div className="flex items-center space-x-2 text-xs text-[#706D66] font-mono">
+            <span>Showing {events.length} of {total} events</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filter Sidebar */}
-          <aside className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-5 h-fit">
-            <h2 className="text-base font-bold text-slate-200 border-b border-slate-800 pb-2">
-              Filters
-            </h2>
+        {/* Layout: Sidebar Filters + Main Events Feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+          {/* Filters Sidebar */}
+          <aside className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-5 space-y-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#F0EDE6]">
+              <div className="flex items-center space-x-1.5 text-xs font-semibold uppercase tracking-wider text-[#25231F]">
+                <FilterIcon size={13} className="text-[#858078]" />
+                <span>Filters</span>
+              </div>
+              {(category || dateFrom || dateTo || keyword) && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-[11px] text-[#C96A4A] hover:text-[#B85C3E] font-medium"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+
+            {/* Keyword Search Filter */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Filter by Keyword
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="e.g. naval, drone, radar..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") loadEvents();
+                  }}
+                  className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3 py-1.5 text-xs text-[#25231F] placeholder-[#8F8A80] focus:border-[#C96A4A] focus:outline-none"
+                />
+              </div>
+            </div>
 
             {/* Category Filter */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase text-slate-400">Category</label>
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Classification
+              </label>
               <select
                 value={category}
                 onChange={(e) => {
                   setCategory(e.target.value);
                   setPage(1);
                 }}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-2.5 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
               >
-                <option value="">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                {categories.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
                   </option>
                 ))}
               </select>
@@ -108,7 +187,9 @@ export default function EventFeedPage() {
 
             {/* Date From */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase text-slate-400">Date From</label>
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Date From
+              </label>
               <input
                 type="date"
                 value={dateFrom}
@@ -116,13 +197,15 @@ export default function EventFeedPage() {
                   setDateFrom(e.target.value);
                   setPage(1);
                 }}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-2.5 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
               />
             </div>
 
             {/* Date To */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase text-slate-400">Date To</label>
+              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+                Date To
+              </label>
               <input
                 type="date"
                 value={dateTo}
@@ -130,118 +213,148 @@ export default function EventFeedPage() {
                   setDateTo(e.target.value);
                   setPage(1);
                 }}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-2.5 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
               />
             </div>
 
-            {/* Reset Filters */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => {
-                setCategory("");
-                setDateFrom("");
-                setDateTo("");
-                setPage(1);
-              }}
-            >
-              Reset Filters
-            </Button>
+            <div className="pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                onClick={loadEvents}
+              >
+                Apply Criteria
+              </Button>
+            </div>
           </aside>
 
-          {/* Main Feed Content */}
-          <div className="lg:col-span-3 space-y-6">
+          {/* Main Events Feed Column */}
+          <div className="lg:col-span-3 space-y-4">
+            {error && (
+              <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-4 text-xs text-[#9B3838]">
+                <span className="font-semibold">Error:</span> {error}
+              </div>
+            )}
+
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="bg-slate-900 border border-slate-800 rounded-xl p-5 h-48 animate-pulse space-y-3"
+                    className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-5 h-36 animate-pulse space-y-3"
                   >
-                    <div className="h-4 bg-slate-800 rounded w-1/3"></div>
-                    <div className="h-4 bg-slate-800 rounded w-full"></div>
-                    <div className="h-4 bg-slate-800 rounded w-4/5"></div>
+                    <div className="h-4 bg-[#F0EDE6] rounded w-1/4"></div>
+                    <div className="h-4 bg-[#F0EDE6] rounded w-full"></div>
+                    <div className="h-4 bg-[#F0EDE6] rounded w-5/6"></div>
                   </div>
                 ))}
               </div>
-            ) : error ? (
-              <div className="bg-red-950/50 border border-red-800/60 rounded-xl p-5 text-red-300">
-                <p className="font-semibold">Error loading event feed</p>
-                <p className="text-sm mt-1">{error}</p>
-              </div>
             ) : events.length === 0 ? (
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center space-y-4">
-                <div className="text-4xl">🛰️</div>
-                <h3 className="text-lg font-bold text-slate-200">No events found</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  No military events match your current filter parameters, or the database is clean. Run the pipeline to ingest new intelligence.
+              <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-10 text-center space-y-3">
+                <div className="w-10 h-10 mx-auto rounded border border-[#E0D9CD] bg-[#F7F5F0] flex items-center justify-center text-[#858078]">
+                  <LayersIcon size={20} />
+                </div>
+                <h3 className="text-base font-serif font-medium text-[#25231F]">
+                  No intelligence events match current criteria
+                </h3>
+                <p className="text-xs text-[#706D66] max-w-md mx-auto">
+                  Adjust your classification or date filters, or initiate a pipeline run to ingest fresh open-source military reports.
                 </p>
-                <Button variant="primary" onClick={() => navigate("/pipeline")}>
-                  Go to Pipeline Control
-                </Button>
+                <div className="pt-2 flex justify-center space-x-2">
+                  <Button variant="outline" size="sm" onClick={handleResetFilters}>
+                    Clear Filters
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={() => navigate("/pipeline")}>
+                    Pipeline Control
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {events.map((evt) => (
-                  <Card
-                    key={evt.id}
-                    hover
-                    onClick={() => navigate(`/events/${evt.id}`)}
-                    className="flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-3">
-                      {/* Card Top Badges */}
-                      <div className="flex items-center justify-between gap-2">
-                        <Badge variant={evt.category || "OTHER_MILITARY"}>
-                          {evt.category || "OTHER_MILITARY"}
-                        </Badge>
+              <div className="space-y-3">
+                {events.map((evt) => {
+                  const title =
+                    evt.summary && evt.summary.length > 90
+                      ? evt.summary.slice(0, 90).replace(/\s+[^\s]*$/, "") + "..."
+                      : evt.summary || `Intelligence Event #${evt.id.slice(-6)}`;
+
+                  return (
+                    <article
+                      key={evt.id}
+                      onClick={() => navigate(`/events/${evt.id}`)}
+                      className="bg-[#FFFFFF] border border-[#E6E2DA] hover:border-[#D0C9BC] rounded-md p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors cursor-pointer group space-y-3"
+                    >
+                      {/* Top Metadata Line */}
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={evt.category || "OTHER_MILITARY"}>
+                            {evt.category || "OTHER_MILITARY"}
+                          </Badge>
+                          <span className="text-[11px] font-mono text-[#858078]">
+                            {evt.article_count || 1}{" "}
+                            {evt.article_count === 1 ? "source article" : "source articles"}
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] font-mono text-[#858078] flex items-center space-x-1">
+                          <CalendarIcon size={12} />
+                          <span>
+                            {formatDate(evt.latest_article_at || evt.first_article_at)}
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Editorial Title */}
+                      <h2 className="text-base font-serif font-medium text-[#25231F] group-hover:text-[#C96A4A] transition-colors leading-snug">
+                        {title}
+                      </h2>
 
                       {/* Summary Excerpt */}
-                      <p className="text-sm text-slate-200 line-clamp-3 leading-relaxed">
-                        {evt.summary || "No summary text available."}
+                      <p className="text-xs sm:text-sm text-[#47423B] leading-relaxed line-clamp-3">
+                        {evt.summary || "No collective summary text available."}
                       </p>
-                    </div>
 
-                    {/* Card Footer Info */}
-                    <div className="border-t border-slate-800 pt-3 flex items-center justify-between text-xs text-slate-400">
-                      <div>
-                        <span>📅 {formatDate(evt.first_article_at || evt.latest_article_at)}</span>
-                        {evt.latest_article_at !== evt.first_article_at && (
-                          <span> – {formatDate(evt.latest_article_at)}</span>
-                        )}
+                      {/* Footer Actions & ID */}
+                      <div className="pt-3 border-t border-[#F0EDE6] flex items-center justify-between text-xs">
+                        <span className="font-mono text-[11px] text-[#858078]">
+                          REF: {evt.id}
+                        </span>
+                        <span className="text-[#C96A4A] group-hover:text-[#B85C3E] font-medium flex items-center space-x-1">
+                          <span>Inspect Event Intelligence Report</span>
+                          <ChevronRightIcon size={13} />
+                        </span>
                       </div>
-                      <span className="font-semibold text-indigo-400">
-                        {evt.article_count || 1} {evt.article_count === 1 ? "article" : "articles"} →
-                      </span>
-                    </div>
-                  </Card>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             )}
 
             {/* Pagination Controls */}
-            {total > 12 && (
-              <div className="flex items-center justify-between border-t border-slate-800 pt-4">
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-[#E6E2DA]">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
-                  ← Previous
+                  <ChevronLeftIcon size={12} />
+                  <span>Previous</span>
                 </Button>
-                <span className="text-xs font-medium text-slate-400">
-                  Page {page} of {Math.ceil(total / 12)}
+
+                <span className="text-xs font-mono text-[#706D66]">
+                  Page {page} of {totalPages}
                 </span>
+
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={page >= Math.ceil(total / 12)}
+                  disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Next →
+                  <span>Next</span>
+                  <ChevronRightIcon size={12} />
                 </Button>
               </div>
             )}

@@ -7,13 +7,13 @@ try:
     from dotenv import load_dotenv
     from pathlib import Path
 
-    backend_env = Path(__file__).resolve().parent.parent / ".env"
-    if backend_env.exists():
-        load_dotenv(backend_env)
     root_env = Path(__file__).resolve().parent.parent.parent / ".env"
     if root_env.exists():
-        load_dotenv(root_env)
-    load_dotenv()
+        load_dotenv(root_env, override=True)
+    backend_env = Path(__file__).resolve().parent.parent / ".env"
+    if backend_env.exists():
+        load_dotenv(backend_env, override=False)
+    load_dotenv(override=True)
 except ImportError:
     pass
 

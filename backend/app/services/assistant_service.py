@@ -68,58 +68,69 @@ class AssistantService:
             else [1.0] * len(ids)
         )
 
-        # Distance threshold check for L2 distance (<= 1.50 matches relevant top events)
+        # Distance threshold check for L2 distance (<= 1.45 matches relevant top events)
         matched_events: list[tuple[str, float]] = []
         for eid, dist in zip(ids, distances):
-            if float(dist) <= 1.50:
+            if float(dist) <= 1.45:
                 matched_events.append((eid, float(dist)))
 
-        if not matched_events:
-            # 3. No match short-circuit (skip Omniroute entirely)
-            answer = "I don't have information on that."
-            citations: list[str] = []
-            answer_source = AnswerSource.NO_MATCH
-
-        else:
-            # 4. Fetch relevant events
+        valid_events: list[Any] = []
+        if matched_events:
             matched_ids = [m[0] for m in matched_events]
             object_ids = [oid for eid in matched_ids if (oid := _as_object_id(eid))]
-
             events = await self._event_repo.list({"_id": {"$in": object_ids}}) if object_ids else []
             valid_events = [e for e in events if e.id and e.summary]
 
-            if not valid_events:
-                answer = "I don't have information on that."
-                citations = []
-                answer_source = AnswerSource.NO_MATCH
+        # Fallback: if vector search yields no close matches, perform keyword search across MongoDB events
+        if not valid_events:
+            import re
+            stop_words = {"what", "when", "where", "which", "about", "tell", "give", "with", "from", "that", "this", "have", "been", "latest", "news", "show"}
+            words = [w.lower() for w in re.findall(r"\w+", message) if len(w) >= 3 and w.lower() not in stop_words]
+            if words:
+                all_events = await self._event_repo.list(page=1, page_size=50)
+                candidates = [e for e in all_events if e.id and e.summary]
+                scored = []
+                for ev in candidates:
+                    ev_text = f"{ev.summary} {' '.join(ev.locations or [])} {ev.category or ''}".lower()
+                    score = sum(1 for w in words if w in ev_text)
+                    if score > 0:
+                        scored.append((score, ev))
+                scored.sort(key=lambda x: x[0], reverse=True)
+                valid_events = [ev for _, ev in scored[:5]]
+
+        if not valid_events:
+            # No match short-circuit
+            answer = "I don't have information on that."
+            citations = []
+            answer_source = AnswerSource.NO_MATCH
+        else:
+            context_list = [
+                {
+                    "id": e.id,
+                    "summary": e.summary,
+                    "claims": e.claims,
+                    "timeline": e.timeline,
+                    "conflicts": e.conflicts,
+                    "locations": e.locations,
+                    "source_refs": e.source_refs,
+                }
+                for e in valid_events
+                if e.id and e.summary
+            ]
+            top_event = valid_events[0]
+
+            llm_answer, llm_citations, llm_source = await self._llm_client.generate_grounded_answer(
+                question=message, event_evidence=context_list
+            )
+
+            if llm_answer and llm_answer.strip() and llm_source:
+                answer = llm_answer.strip()
+                citations = llm_citations or ([top_event.id] if top_event.id else [])
+                answer_source = llm_source
             else:
-                context_list = [
-                    {
-                        "id": e.id,
-                        "summary": e.summary,
-                        "claims": e.claims,
-                        "timeline": e.timeline,
-                        "conflicts": e.conflicts,
-                        "locations": e.locations,
-                        "source_refs": e.source_refs,
-                    }
-                    for e in valid_events
-                    if e.id and e.summary
-                ]
-                top_event = valid_events[0]
-
-                llm_answer, llm_citations, llm_source = await self._llm_client.generate_grounded_answer(
-                    question=message, event_evidence=context_list, timeout=7.0
-                )
-
-                if llm_answer and llm_answer.strip() and llm_source:
-                    answer = llm_answer.strip()
-                    citations = llm_citations or ([top_event.id] if top_event.id else [])
-                    answer_source = llm_source
-                else:
-                    answer = self._structured_fallback.answer_from_events(message, valid_events)
-                    citations = [event.id for event in valid_events if event.id]
-                    answer_source = AnswerSource.STRUCTURED_FALLBACK
+                answer = self._structured_fallback.answer_from_events(message, valid_events)
+                citations = [event.id for event in valid_events if event.id]
+                answer_source = AnswerSource.STRUCTURED_FALLBACK
 
         # 7. Persist user and assistant messages
         await self._message_repo.create(

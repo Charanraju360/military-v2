@@ -1,10 +1,15 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
-
 import Navbar, { navigate } from "../components/Navbar";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import {
+  CalendarIcon,
+  ChevronRightIcon,
+  LayersIcon,
+  SearchIcon,
+} from "../components/ui/Icons";
 
 export default function SearchPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -29,7 +34,7 @@ export default function SearchPage() {
     try {
       const data = await apiClient.searchEvents(searchQuery.trim(), searchMode);
       setResults(data.items || []);
-      setTotal(data.total || 0);
+      setTotal(data.total || (data.items ? data.items.length : 0));
     } catch (err) {
       setError(err.message || "Search failed.");
     } finally {
@@ -46,7 +51,11 @@ export default function SearchPage() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
-      window.history.replaceState({}, "", `/search?q=${encodeURIComponent(query.trim())}`);
+      window.history.replaceState(
+        {},
+        "",
+        `/search?q=${encodeURIComponent(query.trim())}`
+      );
       performSearch(query.trim(), mode);
     }
   };
@@ -60,120 +69,165 @@ export default function SearchPage() {
 
   const formatDate = (isoString) => {
     if (!isoString) return "N/A";
-    return new Date(isoString).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    try {
+      return new Date(isoString).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (_) {
+      return isoString;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Search Header */}
-        <div className="space-y-4">
-          <h1 className="text-2xl font-extrabold text-white">Military OSINT Search</h1>
-          
-          <form onSubmit={handleFormSubmit} className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              placeholder="Search military news, events, weapons, drills..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-base text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <Button type="submit" variant="primary" size="lg">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
+          <div>
+            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+              Intelligence Retrieval / Query Index
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+              Military OSINT Search
+            </h1>
+            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+              Search across clustered military events using dense semantic vector embeddings or literal lexical matching.
+            </p>
+          </div>
+        </div>
+
+        {/* Search Input Box & Controls */}
+        <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
+          <form onSubmit={handleFormSubmit} className="flex gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-2.5 text-[#858078]">
+                <SearchIcon size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder="Search weapons, armed forces, drills, strikes, or regional theatres..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md pl-9 pr-3 py-2 text-xs sm:text-sm text-[#25231F] placeholder-[#8F8A80] focus:border-[#C96A4A] focus:outline-none"
+              />
+            </div>
+            <Button type="submit" variant="primary" size="md">
               Search
             </Button>
           </form>
 
-          {/* Mode Toggle Controls */}
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-semibold uppercase text-slate-400">Search Mode:</span>
-            <div className="inline-flex bg-slate-900 p-1 rounded-lg border border-slate-800">
+          {/* Mode Switch */}
+          <div className="flex items-center space-x-3 text-xs pt-1 border-t border-[#F0EDE6]">
+            <span className="font-mono uppercase text-[11px] text-[#706D66]">
+              Search Mode:
+            </span>
+            <div className="inline-flex rounded border border-[#DEDAD2] bg-[#F7F5F0] p-0.5">
               <button
                 type="button"
                 onClick={() => handleModeToggle("semantic")}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                className={`px-3 py-1 rounded text-xs transition-colors font-medium ${
                   mode === "semantic"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#FFFFFF] text-[#25231F] shadow-[0_1px_1px_rgba(0,0,0,0.04)]"
+                    : "text-[#706D66] hover:text-[#25231F]"
                 }`}
               >
-                🧠 Semantic Vector Search
+                Semantic Vector Search
               </button>
               <button
                 type="button"
                 onClick={() => handleModeToggle("keyword")}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                className={`px-3 py-1 rounded text-xs transition-colors font-medium ${
                   mode === "keyword"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#FFFFFF] text-[#25231F] shadow-[0_1px_1px_rgba(0,0,0,0.04)]"
+                    : "text-[#706D66] hover:text-[#25231F]"
                 }`}
               >
-                🔤 Keyword Search
+                Keyword Text Search
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Results Area */}
+        {/* Results Stream */}
         <div className="space-y-4">
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-slate-900 border border-slate-800 rounded-xl p-5 h-28 animate-pulse"></div>
+                <div
+                  key={i}
+                  className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-5 h-28 animate-pulse space-y-2"
+                >
+                  <div className="h-4 bg-[#F0EDE6] rounded w-1/4"></div>
+                  <div className="h-4 bg-[#F0EDE6] rounded w-full"></div>
+                </div>
               ))}
             </div>
           ) : error ? (
-            <div className="bg-red-950/50 border border-red-800/60 rounded-xl p-5 text-red-300">
-              <p className="font-semibold">Search error</p>
-              <p className="text-sm">{error}</p>
+            <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-4 text-xs text-[#9B3838]">
+              <span className="font-semibold">Search query error:</span> {error}
             </div>
           ) : query.trim() && results.length === 0 ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-slate-400 space-y-2">
-              <div className="text-3xl">🔍</div>
-              <h3 className="font-bold text-slate-200">No events matched your query</h3>
-              <p className="text-xs text-slate-500">Try adjusting your keywords or switching search mode.</p>
+            <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-10 text-center space-y-2">
+              <div className="w-10 h-10 mx-auto rounded border border-[#E0D9CD] bg-[#F7F5F0] flex items-center justify-center text-[#858078]">
+                <SearchIcon size={20} />
+              </div>
+              <h3 className="font-serif font-medium text-base text-[#25231F]">
+                No matching intelligence events retrieved
+              </h3>
+              <p className="text-xs text-[#706D66] max-w-sm mx-auto">
+                No events matched "{query}" in {mode} mode. Try broadening terms or switching modes.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {results.length > 0 && (
-                <p className="text-xs text-slate-400">
-                  Found {total} {total === 1 ? "result" : "results"} for "{query}" in {mode} mode
-                </p>
+                <div className="text-xs font-mono text-[#706D66] pb-1">
+                  Retrieved {total} result(s) for "{query}" via {mode} retrieval
+                </div>
               )}
 
               {results.map((item) => (
-                <Card
+                <article
                   key={item.id}
-                  hover
                   onClick={() => navigate(`/events/${item.id}`)}
-                  className="space-y-2"
+                  className="bg-[#FFFFFF] border border-[#E6E2DA] hover:border-[#D0C9BC] rounded-md p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors cursor-pointer group space-y-2.5"
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center space-x-2">
                       <Badge variant={item.category || "OTHER_MILITARY"}>
                         {item.category || "OTHER_MILITARY"}
                       </Badge>
                       {item.relevance_score !== undefined && (
-                        <span className="text-xs font-semibold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">
-                          {Math.round(item.relevance_score * 100)}% Match
+                        <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#FBF1ED] border border-[#ECCDC1] text-[#B85C3E]">
+                          Relevance: {Math.round(item.relevance_score * 100)}%
                         </span>
                       )}
                     </div>
 
-                    <span className="text-xs text-slate-500">
-                      📅 {formatDate(item.latest_article_at)}
-                    </span>
+                    <div className="text-[11px] font-mono text-[#858078] flex items-center space-x-1">
+                      <CalendarIcon size={12} />
+                      <span>{formatDate(item.latest_article_at)}</span>
+                    </div>
                   </div>
 
-                  <p className="text-sm text-slate-200 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#302E2A] leading-relaxed line-clamp-3">
                     {item.summary}
                   </p>
-                </Card>
+
+                  <div className="pt-2 border-t border-[#F0EDE6] flex items-center justify-between text-xs">
+                    <span className="font-mono text-[11px] text-[#858078]">
+                      ID: #{item.id.slice(-6)}
+                    </span>
+                    <span className="text-[#C96A4A] group-hover:text-[#B85C3E] font-medium flex items-center space-x-1">
+                      <span>View Intelligence Dossier</span>
+                      <ChevronRightIcon size={12} />
+                    </span>
+                  </div>
+                </article>
               ))}
             </div>
           )}

@@ -1,11 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OSINT-EIP</title>
+    <title>AI Based OSINT Military Event Intelligence Platform</title>
+    <meta name="description" content="AI-based Military Open Source Event Intelligence Platform for analysts, researchers, and defense observers." />
+    <script>
+      (function() {
+        const storedTheme = localStorage.getItem("osint_theme");
+        if (storedTheme === "light") {
+          document.documentElement.classList.remove("dark");
+        } else {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body>
+  <body class="bg-[#F7F5F0] dark:bg-[#141311] text-[#25231F] dark:text-[#EDE8DF] antialiased selection:bg-[#F9EFEA] selection:text-[#B85C3E]">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
