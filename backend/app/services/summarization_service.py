@@ -96,7 +96,11 @@ class SummarizationService:
                         final_category = self._parse_category(
                             llm_result.get("category"), majority_category
                         )
-                        claims = self._list_field(llm_result.get("claims")) or workspace["claims"]
+                        raw_claims = self._list_field(llm_result.get("claims")) or workspace["claims"]
+                        claims = [
+                            c if isinstance(c, dict) else {"claim_id": f"claim:{idx}", "text": str(c), "aspect": "statement", "value": str(c)}
+                            for idx, c in enumerate(raw_claims)
+                        ]
                         timeline = self._list_field(llm_result.get("timeline")) or workspace["timeline"]
                         conflicts = self._list_field(llm_result.get("conflicts")) or workspace["conflicts"]
                         locations = [

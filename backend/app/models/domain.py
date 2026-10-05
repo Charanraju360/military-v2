@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 def utc_now() -> datetime:
@@ -132,6 +132,19 @@ class Event(CollectionModel):
     latest_article_at: datetime | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+
+    @field_validator("claims", "timeline", "conflicts", "source_refs", mode="before")
+    @classmethod
+    def _coerce_dict_list(cls, value: Any) -> list[dict[str, Any]]:
+        if not isinstance(value, list):
+            return []
+        coerced: list[dict[str, Any]] = []
+        for i, item in enumerate(value):
+            if isinstance(item, dict):
+                coerced.append(item)
+            elif isinstance(item, str):
+                coerced.append({"claim_id": f"claim:{i}", "text": item, "aspect": "statement", "value": item})
+        return coerced
 
 
 class EventArticle(CollectionModel):
