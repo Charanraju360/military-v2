@@ -1,4 +1,4 @@
-﻿"""Batch NER and embedding processing service implementing FEAT-PROC-02 (Phase 5)."""
+"""Batch NER and embedding processing service implementing FEAT-PROC-02 (Phase 5)."""
 
 from __future__ import annotations
 
@@ -18,20 +18,27 @@ logger = logging.getLogger(__name__)
 # Known military/geopolitical entity mappings for fast, reliable NER classification
 KNOWN_ORGS = {
     "nato", "kremlin", "pentagon", "un", "united nations", "us navy", "us army",
-    "us air force", "pla", "idf", "hamas", "hezbollah", "eu", "european union",
-    "ministry of defense", "department of defense", "armed forces", "wagner group"
+    "us air force", "u.s. air force", "u.s air force", "pla", "idf", "hamas", "hezbollah", "eu", "european union",
+    "ministry of defense", "department of defense", "armed forces", "wagner group",
+    "boeing", "raytheon", "rtx", "lockheed", "lockheed martin", "northrop",
+    "northrop grumman", "general dynamics", "bae systems", "space force",
+    "marines", "us marine corps", "u.s. marine corps", "usmc", "u.s. navy", "u.s. army"
 }
 
 KNOWN_LOCATIONS = {
     "ukraine", "russia", "kyiv", "kiev", "moscow", "gaza", "israel", "red sea",
-    "black sea", "taiwan", "china", "united states", "us", "usa", "beijing",
-    "tehran", "iran", "syria", "lebanon", "poland", "baltic sea", "crimea",
-    "donbas", "kharkiv", "odesa", "washington"
+    "black sea", "taiwan", "china", "united states", "us", "usa", "u.s.", "u.s.a.",
+    "beijing", "tehran", "iran", "syria", "lebanon", "poland", "baltic sea",
+    "crimea", "donbas", "kharkiv", "odesa", "washington", "italy", "rome",
+    "estonia", "norway", "arctic", "atlantic", "pacific", "indo-pacific",
+    "uk", "united kingdom", "britain", "london", "france", "paris", "germany",
+    "berlin", "japan", "tokyo", "south korea", "seoul", "middle east", "africa"
 }
 
 KNOWN_PERSONS = {
     "zelensky", "zelenskyy", "putin", "biden", "joe biden", "blinken", "netanyahu",
-    "shoigu", "austin", "lloyd austin", "macron", "scholz", "jinping", "xi jinping"
+    "shoigu", "austin", "lloyd austin", "macron", "scholz", "jinping", "xi jinping",
+    "trump", "donald trump"
 }
 
 

@@ -78,19 +78,12 @@ export default function EventDetailPage() {
                   <Badge variant={event.category || "OTHER_MILITARY"}>
                     {event.category || "OTHER_MILITARY"}
                   </Badge>
-                  <Badge
-                    variant={
-                      (event.credibility_score || 50) >= 75
-                        ? "high_trust"
-                        : (event.credibility_score || 50) >= 50
-                        ? "mid_trust"
-                        : "low_trust"
-                    }
-                  >
-                    {Math.round(event.credibility_score || 50)}% Credibility Score
-                  </Badge>
-                  <Badge variant={event.summary_source || "omniroute"}>
-                    {event.summary_source === "omniroute" ? "AI-generated" : "Auto-extracted (TextRank)"}
+                  <Badge variant={event.summary_source || "structured_fallback"}>
+                    {event.summary_source === "qwen_primary"
+                      ? "AI-generated (Qwen3-14B)"
+                      : event.summary_source === "openrouter_secondary"
+                      ? "AI-generated (OpenRouter)"
+                      : "Structured Fallback"}
                   </Badge>
                 </div>
 

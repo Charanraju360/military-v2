@@ -8,13 +8,13 @@
 [ ] API implemented per 07-api-specification.md (if API-exposed) — confirmed NO auth check added
 [ ] Database integration matches 06-database-design.md
 [ ] Input validation implemented
-[ ] Error handling implemented for documented error conditions, including Omniroute-fail fallback paths where applicable
+[ ] Error handling implemented for documented error conditions, including Qwen/OpenRouter/structured-fallback paths where applicable
 [ ] Unit tests written
 [ ] Mapped TC-xxx executed and passing
 [ ] Code follows 12-coding-standards.md
 [ ] No unrelated files modified
 [ ] Existing functionality re-verified (no regressions)
-[ ] Latency-sensitive paths (Omniroute calls, batch NER/embed, vector search) confirmed to use their documented timeout/batching approach
+[ ] Latency-sensitive paths (LLM calls, batch NER/embed, vector search) confirmed to use their documented timeout/batching approach
 ```
 
 ## Project-Level Definition of Done
@@ -27,11 +27,11 @@
 [ ] Full pipeline (Run Pipeline button) runs end-to-end: wipe → collect → clean → filter → embed → cluster → summarize, against at least one real source
 [ ] Clean DB button verified to wipe data while preserving `sources`
 [ ] Military topic filter verified to reject non-military test articles
-[ ] Clustering verified to ignore keyword overlap (embedding-only)
-[ ] Omniroute→TextRank fallback verified to trigger correctly on simulated failure
+[ ] Clustering verified to use hybrid semantic/entity/time/location/metadata signals without raw keyword/text-overlap grouping
+[ ] Qwen→OpenRouter→structured fallback verified to trigger correctly on simulated failure
 [ ] Assistant fallback-excerpt and no-match paths both verified
 [ ] Per-phase JSON status verified visible in UI during a live run and retrievable afterward from pipeline_logs
-[ ] README.md and CLAUDE.md reflect the final (no-auth, Atlas, Omniroute+TextRank) design
+[ ] README.md and CLAUDE.md reflect the final (no-auth, Atlas, Qwen/OpenRouter/structured fallback) design
 [ ] Cross-document consistency re-verified across all 15 docs + implementation
 ```
 

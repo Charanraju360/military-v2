@@ -55,13 +55,15 @@ class EventStatus(StrEnum):
 
 
 class SummarySource(StrEnum):
-    OMNIROUTE = "omniroute"
-    TEXTRANK_FALLBACK = "textrank_fallback"
+    QWEN_PRIMARY = "qwen_primary"
+    OPENROUTER_SECONDARY = "openrouter_secondary"
+    STRUCTURED_FALLBACK = "structured_fallback"
 
 
 class AnswerSource(StrEnum):
-    OMNIROUTE = "omniroute"
-    FALLBACK_EXCERPT = "fallback_excerpt"
+    QWEN_PRIMARY = "qwen_primary"
+    OPENROUTER_SECONDARY = "openrouter_secondary"
+    STRUCTURED_FALLBACK = "structured_fallback"
     NO_MATCH = "no_match"
 
 
@@ -116,7 +118,13 @@ class Event(CollectionModel):
     summary: str | None = None
     summary_source: SummarySource | None = None
     category: Category | None = None
-    credibility_score: float | None = Field(default=None, ge=0, le=100)
+    claims: list[dict[str, Any]] = Field(default_factory=list)
+    timeline: list[dict[str, Any]] = Field(default_factory=list)
+    conflicts: list[dict[str, Any]] = Field(default_factory=list)
+    source_refs: list[dict[str, Any]] = Field(default_factory=list)
+    locations: list[str] = Field(default_factory=list)
+    uncertainty_statements: list[str] = Field(default_factory=list)
+    hybrid_cluster_metadata: dict[str, Any] = Field(default_factory=dict)
     article_count: int = Field(default=0, ge=0)
     status: EventStatus = EventStatus.CLUSTERED
     centroid_embedding_id: str | None = None
@@ -145,6 +153,8 @@ class ChatMessage(CollectionModel):
     text: str
     citations: list[str] = Field(default_factory=list)
     answer_source: AnswerSource | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+
 
 
 class PipelineLog(CollectionModel):

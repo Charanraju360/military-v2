@@ -1,4 +1,4 @@
-﻿"""Unit tests for Phase 8: Public Read & Source APIs (API-005 to API-007, API-010 to API-013, TC-012, TC-018)."""
+"""Unit tests for Phase 8: Public Read & Source APIs (API-005 to API-007, API-010 to API-013, TC-012, TC-018)."""
 
 import asyncio
 from datetime import UTC, datetime
@@ -49,12 +49,13 @@ class TestPublicReadAPIs(unittest.TestCase):
         mock_get_detail.return_value = {
             "id": "evt1",
             "summary": "Summary text",
-            "summary_source": "omniroute",
+            "summary_source": "qwen_primary",
             "category": "DRILL",
             "credibility_score": 75.0,
             "articles": [{"id": "art1", "title": "Title", "source": "Reuters", "url": "http://ex.com", "published_at": "2026-08-20T10:00:00Z"}],
             "entities": [{"text": "NATO", "type": "ORG"}],
         }
+
 
         response = self.client.get("/api/events/evt1")
         self.assertEqual(response.status_code, 200)

@@ -10,10 +10,10 @@ class EntityRepository(MongoRepository[Entity]):
 
     async def list_for_article(self, article_id: str) -> list[Entity]:
         object_id = _as_object_id(article_id)
-        return [] if object_id is None else await self.list({"article_id": str(object_id)})
+        return [] if object_id is None else await self.list({"article_id": str(object_id)}, page_size=500)
 
     async def list_for_articles(self, article_ids: list[str]) -> list[Entity]:
         valid_ids = [str(_as_object_id(aid)) for aid in article_ids if _as_object_id(aid) is not None]
         if not valid_ids:
             return []
-        return await self.list({"article_id": {"$in": valid_ids}})
+        return await self.list({"article_id": {"$in": valid_ids}}, page_size=2000)

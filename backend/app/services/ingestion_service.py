@@ -142,6 +142,17 @@ class IngestionService:
         if not isinstance(items, list):
             raise ValueError("API response must be a JSON array")
         mapping = source.field_mapping or {}
+        # If items have date/published_at, sort descending to ingest latest news first
+        date_key = mapping.get("published_at", "date")
+        if any(isinstance(it, dict) and date_key in it for it in items):
+            items = sorted(
+                [it for it in items if isinstance(it, dict)],
+                key=lambda it: str(it.get(date_key) or ""),
+                reverse=True,
+            )
+            # Limit API items to the latest 50 headlines to avoid fetching stale backlogs
+            items = items[:50]
+
         articles: list[CollectedArticle] = []
         errors: list[str] = []
         for item in items:
@@ -149,11 +160,13 @@ class IngestionService:
                 errors.append(f"{source.name}: API item skipped because it is not an object")
                 continue
             try:
+                title_val = self._item_value(item, mapping, "title")
+                content_val = self._item_value(item, mapping, "content", required=False) or title_val
                 articles.append(
                     self._candidate(
-                        self._item_value(item, mapping, "title"),
+                        title_val,
                         self._item_value(item, mapping, "url"),
-                        self._item_value(item, mapping, "content"),
+                        content_val,
                         self._item_value(item, mapping, "published_at", required=False),
                         fetched_at,
                     )

@@ -1,11 +1,12 @@
-﻿"""Military topic-filter service implementing FEAT-PROC-01b (Phase 4)."""
+"""Military topic-filter service implementing FEAT-PROC-01b (Phase 4)."""
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
-from app.clients.omniroute_client import OmnirouteClient
+from app.clients.llm_client import LLMClient
 from app.models.domain import Article, ArticleStatus, Category
 from app.repositories.article_repository import ArticleRepository
 
@@ -118,10 +119,10 @@ class TopicFilterService:
     def __init__(
         self,
         article_repository: ArticleRepository | None = None,
-        omniroute_client: OmnirouteClient | None = None,
+        llm_client: LLMClient | None = None,
     ) -> None:
         self._article_repository = article_repository or ArticleRepository()
-        self._omniroute_client = omniroute_client or OmnirouteClient()
+        self._llm_client = llm_client or LLMClient()
 
     def check_keywords(self, title: str, cleaned_text: str | None) -> Category | None:
         """Check title + first ~500 chars against the keyword allowlist.
@@ -150,60 +151,71 @@ class TopicFilterService:
             )
 
             while cleaned_articles:
+                ambiguous_articles = []
                 for article in cleaned_articles:
-                    try:
-                        if not article.id:
-                            continue
+                    if not article.id:
+                        continue
 
-                        # Step 1 & 2: Check keyword allowlist
-                        matched_category = self.check_keywords(
-                            article.title, article.cleaned_text
+                    # Step 1 & 2: Check keyword allowlist (fast in-memory)
+                    matched_category = self.check_keywords(
+                        article.title, article.cleaned_text
+                    )
+
+                    if matched_category is not None:
+                        await self._article_repository.update(
+                            article.id,
+                            {
+                                "status": ArticleStatus.FILTERED_OK.value,
+                                "category_hint": matched_category.value,
+                            },
                         )
+                        filtered_ok += 1
+                    else:
+                        ambiguous_articles.append(article)
 
-                        if matched_category is not None:
-                            await self._article_repository.update(
-                                article.id,
-                                {
-                                    "status": ArticleStatus.FILTERED_OK.value,
-                                    "category_hint": matched_category.value,
-                                },
-                            )
-                            filtered_ok += 1
-                        else:
-                            # Step 3: Ambiguous article -> call Omniroute with 6s timeout
-                            is_military, llm_category = await self._omniroute_client.classify_topic(
-                                title=article.title,
-                                text=article.cleaned_text or "",
-                                timeout=6.0,
-                            )
+                # Step 3 & 4: Process ambiguous articles concurrently with short timeout
+                if ambiguous_articles:
+                    sem = asyncio.Semaphore(4)
 
-                            if is_military and llm_category is not None:
-                                await self._article_repository.update(
-                                    article.id,
-                                    {
-                                        "status": ArticleStatus.FILTERED_OK.value,
-                                        "category_hint": llm_category.value,
-                                    },
+                    async def classify_and_update(art: Article) -> None:
+                        nonlocal filtered_ok, rejected_offtopic
+                        async with sem:
+                            try:
+                                is_military, llm_category = await self._llm_client.classify_topic(
+                                    title=art.title,
+                                    text=art.cleaned_text or "",
+                                    timeout=8.0,
                                 )
-                                filtered_ok += 1
-                            else:
-                                # Step 4: Reject as off-topic (default per FR-005 / NFR-020)
-                                await self._article_repository.update(
-                                    article.id,
-                                    {
-                                        "status": ArticleStatus.REJECTED.value,
-                                        "rejection_reason": "off_topic",
-                                    },
-                                )
-                                rejected_offtopic += 1
 
-                    except Exception as error:
-                        logger.exception("Error filtering article %s", article.id)
-                        errors.append(f"Article {article.id}: {error}")
+                                if is_military and llm_category is not None:
+                                    await self._article_repository.update(
+                                        art.id,
+                                        {
+                                            "status": ArticleStatus.FILTERED_OK.value,
+                                            "category_hint": llm_category.value,
+                                        },
+                                    )
+                                    filtered_ok += 1
+                                else:
+                                    # Default reject as off-topic per FR-005 / NFR-020
+                                    await self._article_repository.update(
+                                        art.id,
+                                        {
+                                            "status": ArticleStatus.REJECTED.value,
+                                            "rejection_reason": "off_topic",
+                                        },
+                                    )
+                                    rejected_offtopic += 1
+                            except Exception as error:
+                                logger.exception("Error filtering ambiguous article %s", art.id)
+                                errors.append(f"Article {art.id}: {error}")
+
+                    await asyncio.gather(*(classify_and_update(art) for art in ambiguous_articles))
 
                 cleaned_articles = await self._article_repository.list_by_status(
                     ArticleStatus.CLEANED, batch_size=batch_size
                 )
+
 
         except Exception as error:
             logger.exception("Error during topic filter phase execution")

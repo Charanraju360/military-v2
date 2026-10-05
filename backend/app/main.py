@@ -1,12 +1,23 @@
-"""FastAPI application shell for the public OSINT-EIP API."""
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import assistant, events, pipeline, search, sources
+from app.repositories.pipeline_status_repository import PipelineStatusRepository
 
 
-app = FastAPI(title="OSINT-EIP")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Release any orphaned lock from prior unexpected server shutdowns
+    try:
+        await PipelineStatusRepository().release_lock()
+    except Exception:
+        pass
+    yield
+
+
+app = FastAPI(title="OSINT-EIP", lifespan=lifespan)
+
 
 app.add_middleware(
     CORSMiddleware,

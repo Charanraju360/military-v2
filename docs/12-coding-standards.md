@@ -24,8 +24,8 @@ Follow `05-system-architecture.md` §12 exactly.
 - Services: house business rules; `pipeline_orchestrator.py` is the only place that sequences phases and manages the run lock.
 - `topic_filter_service.py`: keyword allowlist as a maintainable Python list/config file, not scattered inline strings.
 - `ner_embedding_service.py`: prefer the model client's native batch method; if unavailable, use `asyncio.gather` over the batch rather than sequential blocking calls.
-- `summarization_service.py` and `assistant_service.py`: both go through `omniroute_client.py`, which enforces the timeout centrally (no per-call-site timeout duplication).
-- `textrank_fallback.py`: pure local computation, no network import inside it.
+- `summarization_service.py`, `assistant_service.py`, and `topic_filter_service.py`: all LLM calls go through `llm_client.py`, which enforces provider order and timeouts centrally.
+- `structured_event_fallback.py`: pure local computation, no network import inside it.
 
 ## Database Standards
 - No `users` collection — do not create one.
@@ -34,17 +34,17 @@ Follow `05-system-architecture.md` §12 exactly.
 
 ## Error Handling
 - Every phase in the orchestrator wraps its logic in try/except, records the exception message into that phase's JSON, and continues to the next phase where safe (or aborts the run cleanly, always releasing the lock).
-- Omniroute calls: single retry is NOT required — a timeout/error goes straight to fallback (TextRank or excerpt) to keep latency bounded, per NFR-002.
+- LLM calls: a timeout/error goes straight to the next provider or structured fallback to keep latency bounded, per NFR-002.
 
 ## Logging
 - Structured logs per phase; never log full concatenated article text at INFO (log counts/IDs only).
-- Log every fallback trigger (`textrank_fallback` used, `fallback_excerpt` used) at WARNING so it's easy to see how often the primary path fails.
+- Log every fallback trigger (`openrouter_secondary` used, `structured_fallback` used) at WARNING so it's easy to see how often the primary path fails.
 
 ## Comments
 Document *why*; reference the FEAT/FR ID a function implements in its docstring.
 
 ## Dependency Management
-No new dependency without justification. TextRank fallback: use a lightweight, well-known library (e.g., `sumy`) rather than hand-rolling the algorithm, since it's a documented fallback path, not core research.
+No new dependency without justification. Structured fallback should use stored event evidence and standard-library logic unless the docs explicitly approve another dependency.
 
 ## Git Conventions
 Branch: `feature/<desc>`; commit messages reference FEAT/FR IDs, e.g. `feat(pipeline): implement FEAT-CTRL-01 run pipeline (FR-001)`.

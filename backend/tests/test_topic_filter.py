@@ -1,25 +1,25 @@
-﻿"""Unit tests for Phase 4: Military Topic Filter Service (FEAT-PROC-01b)."""
+"""Unit tests for Phase 4: Military Topic Filter Service (FEAT-PROC-01b)."""
 
 import asyncio
 from datetime import UTC, datetime
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.clients.omniroute_client import OmnirouteClient
+from app.clients.llm_client import LLMClient
 from app.models.domain import Article, ArticleStatus, Category
 from app.repositories.article_repository import ArticleRepository
 from app.services.topic_filter_service import TopicFilterService
 
 
 class TestTopicFilterService(unittest.TestCase):
-    """Test suite for topic filtering logic, keyword allowlist, and Omniroute fallback."""
+    """Test suite for topic filtering logic, keyword allowlist, and LLM fallback."""
 
     def setUp(self) -> None:
         self.mock_article_repo = AsyncMock(spec=ArticleRepository)
-        self.mock_omniroute_client = AsyncMock(spec=OmnirouteClient)
+        self.mock_llm_client = AsyncMock(spec=LLMClient)
         self.service = TopicFilterService(
             article_repository=self.mock_article_repo,
-            omniroute_client=self.mock_omniroute_client,
+            llm_client=self.mock_llm_client,
         )
 
     def test_keyword_checks(self) -> None:
@@ -55,7 +55,7 @@ class TestTopicFilterService(unittest.TestCase):
         )
 
     def test_filter_articles_execution(self) -> None:
-        """Verify filter_articles batch processing and Omniroute fallback on non-military."""
+        """Verify filter_articles batch processing and LLM fallback on ambiguous articles."""
 
         now = datetime.now(UTC)
         cleaned_articles = [
@@ -95,8 +95,8 @@ class TestTopicFilterService(unittest.TestCase):
         self.mock_article_repo.list_by_status.side_effect = [cleaned_articles, []]
         self.mock_article_repo.update = AsyncMock(return_value=None)
 
-        # Omniroute behavior: art2 -> military GEOPOLITICS, art3 -> non-military/failure
-        self.mock_omniroute_client.classify_topic.side_effect = [
+        # LLM behavior: art2 -> military GEOPOLITICS, art3 -> non-military/failure
+        self.mock_llm_client.classify_topic.side_effect = [
             (True, Category.GEOPOLITICS),
             (False, None),
         ]

@@ -1,4 +1,4 @@
-﻿"""Grounded RAG assistant service implementing FEAT-APP-03 and FR-010 (Phase 9)."""
+"""Grounded RAG assistant service implementing FEAT-APP-03 and FR-010 (Phase 9)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,8 @@ from typing import Any
 from bson import ObjectId
 
 from app.clients.embedding_client import EmbeddingClient
-from app.clients.omniroute_client import OmnirouteClient
+from app.clients.llm_client import LLMClient
+from app.clients.structured_event_fallback import StructuredEventFallback
 from app.models.domain import AnswerSource, ChatMessage, ChatSession, EventStatus
 from app.repositories.base import _as_object_id
 from app.repositories.chat_message_repository import ChatMessageRepository
@@ -29,14 +30,16 @@ class AssistantService:
         event_repository: EventRepository | None = None,
         chroma_repository: ChromaRepository | None = None,
         embedding_client: EmbeddingClient | None = None,
-        omniroute_client: OmnirouteClient | None = None,
+        llm_client: LLMClient | None = None,
+        structured_fallback: StructuredEventFallback | None = None,
     ) -> None:
         self._session_repo = chat_session_repository or ChatSessionRepository()
         self._message_repo = chat_message_repository or ChatMessageRepository()
         self._event_repo = event_repository or EventRepository()
         self._chroma_repo = chroma_repository or ChromaRepository()
         self._embedding_client = embedding_client or EmbeddingClient()
-        self._omniroute_client = omniroute_client or OmnirouteClient()
+        self._llm_client = llm_client or LLMClient()
+        self._structured_fallback = structured_fallback or StructuredEventFallback()
 
     async def chat_message(
         self, message: str, session_id: str | None = None
@@ -90,23 +93,33 @@ class AssistantService:
                 citations = []
                 answer_source = AnswerSource.NO_MATCH
             else:
-                context_list = [{"id": e.id, "summary": e.summary} for e in valid_events if e.id and e.summary]
+                context_list = [
+                    {
+                        "id": e.id,
+                        "summary": e.summary,
+                        "claims": e.claims,
+                        "timeline": e.timeline,
+                        "conflicts": e.conflicts,
+                        "locations": e.locations,
+                        "source_refs": e.source_refs,
+                    }
+                    for e in valid_events
+                    if e.id and e.summary
+                ]
                 top_event = valid_events[0]
 
-                # 5. Call Omniroute grounded answer
-                omni_answer, omni_citations = await self._omniroute_client.generate_grounded_answer(
-                    question=message, context_events=context_list, timeout=7.0
+                llm_answer, llm_citations, llm_source = await self._llm_client.generate_grounded_answer(
+                    question=message, event_evidence=context_list, timeout=7.0
                 )
 
-                if omni_answer and omni_answer.strip():
-                    answer = omni_answer.strip()
-                    citations = omni_citations or ([top_event.id] if top_event.id else [])
-                    answer_source = AnswerSource.OMNIROUTE
+                if llm_answer and llm_answer.strip() and llm_source:
+                    answer = llm_answer.strip()
+                    citations = llm_citations or ([top_event.id] if top_event.id else [])
+                    answer_source = llm_source
                 else:
-                    # 6. Fallback excerpt: return top event summary verbatim
-                    answer = top_event.summary or "I don't have information on that."
-                    citations = [top_event.id] if top_event.id else []
-                    answer_source = AnswerSource.FALLBACK_EXCERPT
+                    answer = self._structured_fallback.answer_from_events(message, valid_events)
+                    citations = [event.id for event in valid_events if event.id]
+                    answer_source = AnswerSource.STRUCTURED_FALLBACK
 
         # 7. Persist user and assistant messages
         await self._message_repo.create(
@@ -139,9 +152,14 @@ class AssistantService:
                 "role": msg.role,
                 "text": msg.text,
                 "citations": msg.citations,
-                "answer_source": msg.answer_source,
-                "created_at": msg.created_at,
+                "answer_source": msg.answer_source.value if hasattr(msg.answer_source, "value") else msg.answer_source,
+                "created_at": (
+                    msg.created_at.isoformat()
+                    if hasattr(msg, "created_at") and getattr(msg, "created_at") is not None
+                    else None
+                ),
             }
             for msg in messages
             if msg.id
         ]
+

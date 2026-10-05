@@ -3,29 +3,29 @@
 > **Status: Specification complete, implementation not started.** No authentication anywhere — fully public dashboard, manually-triggered pipeline.
 
 ## Description
-Wipes its own database on trigger, ingests military-related news only, clusters articles into events purely by semantic meaning (no keywords), generates one collective LLM summary per event (Omniroute, with local TextRank fallback), and serves everything through a public dashboard and a basic RAG assistant. Every pipeline phase reports its own JSON status.
+Wipes its own database on trigger, ingests military-related news only, clusters articles into events with hybrid semantic/entity/time/location/metadata signals, generates one structured collective event summary (Qwen3-14B primary, OpenRouter secondary, structured local fallback), and serves everything through a public dashboard and an event-centric RAG assistant. Every pipeline phase reports its own JSON status.
 
 Full background: [`docs/01-project-proposal.md`](docs/01-project-proposal.md).
 
 ## Key Design Decisions
 - **No login / no roles** — single public dashboard, anyone can trigger the pipeline or clean the DB.
 - **MongoDB Atlas (cloud)** — connected via a `MONGODB_URI` connection string, not a local database.
-- **Meaning-only clustering** — UMAP+HDBSCAN over embeddings; zero keyword-matching logic anywhere in grouping.
-- **Omniroute-first summarization** — falls back automatically to local TextRank if Omniroute fails or times out.
-- **Military-only content** — a topic filter (keyword pre-check + Omniroute for ambiguous cases) rejects anything not related to attacks, geopolitics, peace deals, agreements, or drills.
+- **Hybrid event clustering** — semantic embeddings plus entities, time, location, and metadata.
+- **Qwen-first summarization** — Qwen3-14B primary, OpenRouter secondary, structured local fallback when LLMs fail.
+- **Military-only content** — a topic filter (keyword pre-check + the configured LLM path for ambiguous cases) rejects anything not related to attacks, geopolitics, peace deals, agreements, or drills.
 - **Manual pipeline control only** — no scheduler; "Run Pipeline" always wipes the DB first, then runs fresh; a separate "Clean DB" button wipes without running.
-- **Latency-first** — batched NER/embedding calls, short Omniroute timeouts with instant fallback, indexed vector search only.
+- **Latency-first** — batched NER/embedding calls, short LLM timeouts with instant fallback, indexed vector search only.
 
 ## Planned Features
 1. Manual "Run Pipeline" (auto-wipes DB, runs collect→clean→filter→embed→cluster→summarize)
 2. Standalone "Clean DB" button
 3. Military-topic filter
-4. Meaning-based (embedding-only) event clustering
-5. Collective per-event summarization with fallback
+4. Hybrid event clustering
+5. Collective event-level summarization with claims, timeline, conflicts, and fallback
 6. Article publish dates shown throughout
 7. Public event dashboard with filters
 8. Keyword + semantic search
-9. Basic RAG assistant with citation + fallback-excerpt behavior
+9. Event-centric RAG assistant with citation + structured fallback behavior
 10. Live + historical per-phase JSON pipeline status
 
 Full detail: [`docs/03-functional-requirements.md`](docs/03-functional-requirements.md).
@@ -37,9 +37,9 @@ Full detail: [`docs/03-functional-requirements.md`](docs/03-functional-requireme
 | Backend | Python 3.11+, FastAPI |
 | Database | MongoDB Atlas (cloud) |
 | Vector store | ChromaDB |
-| Clustering | UMAP + HDBSCAN (embeddings only) |
+| Clustering | Hybrid semantic/entity/time/location/metadata clustering |
 | NER | spaCy / GLiNER (batched) |
-| Summarization/RAG | Omniroute → local TextRank fallback |
+| Summarization/RAG | Qwen3-14B → OpenRouter → structured local fallback |
 | Auth | None |
 
 ## Planned Architecture Overview
@@ -49,7 +49,8 @@ flowchart TD
     FE --> API[FastAPI Backend]
     API --> ATLAS[(MongoDB Atlas)]
     API --> VEC[(ChromaDB)]
-    API --> OMNI[Omniroute]
+    API --> QWEN[Qwen3-14B tunnel]
+    API --> OR[OpenRouter]
     FE -->|Run Pipeline / Clean DB| API
 ```
 Full detail: [`docs/05-system-architecture.md`](docs/05-system-architecture.md).
@@ -68,15 +69,21 @@ osint-eip/
 - Python 3.11+, Node.js 18+
 - A MongoDB Atlas cluster + connection string
 - ChromaDB (local/embedded mode)
-- An Omniroute API key
+- A Qwen3-14B tunnel endpoint and credential, when the LLM phase is reached
+- An OpenRouter API key, when secondary LLM fallback is enabled
 
 ## Configuration (Planned Environment Variables)
 ```env
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/osint_eip
 CHROMADB_PATH=./chroma_data
-OMNIROUTE_API_KEY=your_key_here
-OMNIROUTE_BASE_URL=https://api.omniroute.example/v1
-OMNIROUTE_TIMEOUT_SECONDS=7
+QWEN_BASE_URL=https://your-qwen-tunnel.example/v1
+QWEN_API_KEY=your_key_here
+QWEN_MODEL=qwen3-14b
+QWEN_TIMEOUT_SECONDS=7
+OPENROUTER_API_KEY=your_key_here
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+OPENROUTER_MODEL=your_secondary_model
+OPENROUTER_TIMEOUT_SECONDS=7
 SOURCE_REQUEST_TIMEOUT_SECONDS=15
 ```
 
@@ -104,11 +111,11 @@ MongoDB Atlas collections: `sources` (persists across wipes), `articles`, `entit
 
 ## Troubleshooting (Planned)
 - **Pipeline stuck "running"**: check `pipeline_status.current_phase`; a hard crash should still release the lock — if not, this is a bug to fix per `docs/12-coding-standards.md` error-handling rules.
-- **Everything rejected as off-topic**: check the keyword allowlist in `topic_filter_service.py` and confirm Omniroute is reachable for ambiguous-case classification.
-- **Summaries always TextRank, never Omniroute**: check `OMNIROUTE_API_KEY`/timeout config.
+- **Everything rejected as off-topic**: check the keyword allowlist in `topic_filter_service.py` and confirm Qwen/OpenRouter configuration is reachable for ambiguous-case classification.
+- **Summaries always use structured fallback**: check Qwen/OpenRouter endpoint, key, model, and timeout configuration.
 
 ## Documentation
 Full package in [`docs/`](docs/), 13 documents (01–13). See also [`CLAUDE.md`](CLAUDE.md) for AI-agent build instructions.
 
 ## Project Status
-📋 Specification complete (revision 2 — no-auth, Atlas, Omniroute+TextRank, military-only filter, manual pipeline control). Implementation not yet started.
+📋 Specification redesign in progress (revision 3 — no-auth, Atlas, Qwen/OpenRouter/structured fallback, military-only filter, hybrid clustering, manual pipeline control).

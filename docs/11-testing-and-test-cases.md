@@ -1,7 +1,7 @@
-﻿# Testing & Test Cases Document
+# Testing & Test Cases Document
 
 ## Testing Strategy
-Unit tests per service (mocked DB/Omniroute/embedding); integration tests against a disposable Mongo Atlas test DB + local Chroma dir; API tests via FastAPI `TestClient` (no auth cases needed — everything public); end-to-end flows (run pipeline → browse → search → ask assistant).
+Unit tests per service (mocked DB/Qwen/OpenRouter/embedding); integration tests against a disposable Mongo Atlas test DB + local Chroma dir; API tests via FastAPI `TestClient` (no auth cases needed — everything public); end-to-end flows (run pipeline → browse → search → ask assistant).
 
 ## Test Cases
 
@@ -72,15 +72,15 @@ Unit tests per service (mocked DB/Omniroute/embedding); integration tests agains
 - **Objective**: Verify collective summary reflects all member articles, not just one.
 - **Preconditions**: Event with 3 articles, each mentioning a distinct unique fact (A, B, C).
 - **Steps**: Run summarization (Omniroute mocked to echo input).
-- **Expected**: The combined text sent to Omniroute contains facts A, B, and C from all 3 articles (verified via the mock's captured input), `summary_source=omniroute`.
+- **Expected**: The event workspace sent to Qwen contains evidence from all 3 articles (verified via the mock's captured input), `summary_source=qwen_primary`.
 - **Actual**: Executed unit test in `test_summarization.py`. All articles concatenated. | **Status**: Passed
 
 ### TC-011 — Module: Processing | FR-008
-- **Objective**: Verify TextRank fallback fires on Omniroute timeout.
-- **Preconditions**: Omniroute mocked to hang past the timeout.
+- **Objective**: Verify structured fallback fires after Qwen and OpenRouter time out/fail.
+- **Preconditions**: Qwen and OpenRouter mocked to hang past the timeout or return invalid output.
 - **Steps**: Run summarization.
-- **Expected**: `summary_source=textrank_fallback`, non-empty `summary`, total call duration ≈ the configured timeout (not longer).
-- **Actual**: Executed unit test in `test_summarization.py`. TextRank fallback verified. | **Status**: Passed
+- **Expected**: `summary_source=structured_fallback`, non-empty `summary`, structured evidence fields retained, total call duration bounded by configured timeouts.
+- **Actual**: Executed unit test in `test_summarization.py`. Structured fallback synthesis verified. | **Status**: Passed
 
 ### TC-012 — Module: Dashboard API | FR-009
 - **Objective**: Verify no auth is required to list events.
@@ -92,7 +92,7 @@ Unit tests per service (mocked DB/Omniroute/embedding); integration tests agains
 - **Objective**: Verify grounded answer with citation on a relevant question.
 - **Preconditions**: Event about a Baltic Sea drill exists and is embedded.
 - **Steps**: `POST /api/assistant/chat` `{"message":"What drills happened in the Baltic Sea?"}`
-- **Expected**: `answer_source=omniroute`, `citations` includes that event's ID.
+- **Expected**: `answer_source=qwen_primary`, `citations` includes that event's ID.
 - **Actual**: Executed unit test in `test_assistant.py`. Grounded answer & citations verified. | **Status**: Passed
 
 ### TC-014 — Module: Assistant | FR-010

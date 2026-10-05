@@ -1,4 +1,4 @@
-﻿"""Unit tests for Phase 6: Embedding-Only Clustering Service (FEAT-PROC-03 / FR-007 / TC-009)."""
+"""Unit tests for Phase 6: Embedding-Only Clustering Service (FEAT-PROC-03 / FR-007 / TC-009)."""
 
 import asyncio
 from datetime import UTC, datetime
@@ -29,23 +29,37 @@ class TestClusteringService(unittest.TestCase):
             chroma_repository=self.mock_chroma_repo,
         )
 
-    def test_clustering_vector_only_logic(self) -> None:
-        """Verify clustering operates ONLY on vector similarity, ignoring text/keywords (TC-009)."""
-
-        article_ids = ["art1", "art2", "art3"]
-        # art1 and art2 have very close vectors (cosine similarity ~1.0)
-        # art3 has an orthogonal vector
+    def test_clustering_hybrid_signals_logic(self) -> None:
+        """Verify clustering operates on hybrid signals (semantic, entity, location, time, metadata) (TC-009)."""
+        now = datetime.now(UTC)
+        articles = [
+            Article(id="art1", source_id="src1", url="http://ex.com/1", url_hash="h1", title="A1", published_at=now, category_hint="ATTACK"),
+            Article(id="art2", source_id="src1", url="http://ex.com/2", url_hash="h2", title="A2", published_at=now, category_hint="ATTACK"),
+            Article(id="art3", source_id="src1", url="http://ex.com/3", url_hash="h3", title="A3", published_at=now, category_hint="DRILL"),
+        ]
+        # art1 and art2 have high cosine similarity and same metadata
         vec1 = [1.0, 0.0, 0.0] + [0.0] * 381
         vec2 = [0.99, 0.1, 0.0] + [0.0] * 381
         vec3 = [0.0, 0.0, 1.0] + [0.0] * 381
+        vectors_by_id = {"art1": vec1, "art2": vec2, "art3": vec3}
+        entities_by_article = {
+            "art1": [{"text": "NATO", "type": "ORG"}, {"text": "Kyiv", "type": "LOCATION"}],
+            "art2": [{"text": "NATO", "type": "ORG"}, {"text": "Kyiv", "type": "LOCATION"}],
+            "art3": [{"text": "Pacific", "type": "LOCATION"}],
+        }
 
-        clusters = self.service.cluster_vectors(article_ids, [vec1, vec2, vec3])
+        clusters, metadata = self.service.cluster_articles(
+            articles=articles,
+            vectors_by_id=vectors_by_id,
+            entities_by_article=entities_by_article,
+        )
 
-        # art1 and art2 should be in 1 cluster, art3 in a separate singleton cluster
+        # art1 and art2 should cluster together, art3 in a separate cluster
         self.assertEqual(len(clusters), 2)
         cluster_sets = [set(c) for c in clusters]
         self.assertIn({"art1", "art2"}, cluster_sets)
         self.assertIn({"art3"}, cluster_sets)
+        self.assertEqual(metadata["method"], "hybrid_graph")
 
     def test_cluster_processed_articles(self) -> None:
         """Verify full cluster_processed_articles flow creates Events, centroids, and EventArticles."""

@@ -7,14 +7,14 @@ Same as before: minimal dashboard style, one shared component set (`Card`, `Butt
 
 ## SCR-001 — Event Feed (Home)
 - **Route**: `/` (default landing page — no login redirect)
-- **Layout**: Header (logo, search bar, nav: Feed/Search/Assistant/Sources/Pipeline) + filter sidebar (category from military list, date range, min credibility) + event card grid + pagination.
-- **EventCard shows**: category badge, collective summary excerpt, credibility badge, article count, **publish-date range** (`first_article_at`–`latest_article_at`), "view" link.
+- **Layout**: Header (logo, search bar, nav: Feed/Search/Assistant/Sources/Pipeline) + filter sidebar (category from military list, date range) + event card grid + pagination.
+- **EventCard shows**: category badge, collective summary excerpt, article count, **publish-date range** (`first_article_at`–`latest_article_at`), "view" link.
 - **Empty State**: "No events yet — run the pipeline from the Pipeline Control page." with a shortcut link.
 - **Loading/Error States**: as before.
 
 ## SCR-002 — Event Detail
 - **Route**: `/events/:eventId`
-- **Layout**: category + credibility badges, **collective summary** (clearly labeled "Summary of N articles"), `summary_source` shown subtly (e.g., small tag "AI-generated" vs "auto-extracted"), entity tags, article table with **published date column**, "Ask the assistant about this" button.
+- **Layout**: category badge, **collective summary** (clearly labeled "Summary of N articles"), `summary_source` shown subtly, claims/timeline/conflicts where available, entity tags, article table with **published date column**, "Ask the assistant about this" button.
 
 ## SCR-003 — Search
 - **Route**: `/search?q=...`
@@ -23,7 +23,7 @@ Same as before: minimal dashboard style, one shared component set (`Card`, `Butt
 ## SCR-004 — Assistant Chat
 - **Route**: `/assistant`
 - **Layout**: session list (left) + chat thread (right).
-- **Assistant message rendering**: normal answer + citation chips when `answer_source=omniroute`; a small "(from stored summary — AI was unavailable)" label when `answer_source=fallback_excerpt`; plain "no info" bubble when `answer_source=no_match`.
+- **Assistant message rendering**: normal answer + citation chips when `answer_source=qwen_primary` or `openrouter_secondary`; a small "(from stored event evidence - AI was unavailable)" label when `answer_source=structured_fallback`; plain "no info" bubble when `answer_source=no_match`.
 - **Input**: message box, Send button, "New chat".
 
 ## SCR-005 — Sources

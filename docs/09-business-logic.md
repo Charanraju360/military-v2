@@ -35,12 +35,12 @@ Unchanged (strip HTML, reject <100 chars). Phase output: `{phase:"clean", cleane
 
 **Step 1**: Lowercase-match `title + cleaned_text` (first ~500 chars) against the military keyword allowlist.
 **Step 2**: If matched → `status=filtered_ok`, set `category_hint` via simple rule table (e.g., "drill"/"exercise" → DRILL; "ceasefire"/"treaty" → PEACE_DEAL; "strike"/"attack" → ATTACK; "NATO"/"summit"/"alliance" → GEOPOLITICS; "agreement"/"pact" → AGREEMENT; else OTHER_MILITARY).
-**Step 3**: If no keyword match → call Omniroute once: "Classify as military or not; if military, which category." Timeout 6s.
-**Step 4**: Omniroute says non-military, or times out with no keyword fallback possible → `status=rejected`, `rejection_reason=off_topic`.
-**Step 5**: Omniroute says military → `status=filtered_ok`, `category_hint` = its answer.
+**Step 3**: If no keyword match → call the configured LLM path once (Qwen3-14B primary, OpenRouter secondary): "Classify as military or not; if military, which category." Timeout 6s.
+**Step 4**: The LLM path says non-military, or all configured LLM paths fail with no keyword fallback possible → `status=rejected`, `rejection_reason=off_topic`.
+**Step 5**: The LLM path says military → `status=filtered_ok`, `category_hint` = its answer.
 
 **Business Rules**: The keyword pre-filter is intentionally biased toward catching obvious matches cheaply; only genuinely ambiguous articles reach the LLM call, keeping latency down (NFR-002/003).
-**Edge Cases**: Omniroute unreachable during an ambiguous check → article is rejected by default (`off_topic`, reason `classification_unavailable`) rather than let through unchecked — safer default given NFR-020 (no non-military content in results).
+**Edge Cases**: Qwen/OpenRouter unreachable during an ambiguous check → article is rejected by default (`off_topic`, reason `classification_unavailable`) rather than let through unchecked — safer default given NFR-020 (no non-military content in results).
 Phase output: `{phase:"filter", filtered_ok:N, rejected_offtopic:N}`.
 
 ---
@@ -57,21 +57,33 @@ Phase output: `{phase:"embed", processed:N, failed:N}`.
 
 ---
 
-## Workflow: Meaning-Only Clustering (updated)
-Same mechanics as before (recency-window centroid match, then UMAP+HDBSCAN for the rest) — **explicit rule: no step in this workflow inspects article text/keywords; every grouping decision is based solely on embedding-vector distance.**
-Phase output: `{phase:"cluster", events_created:N, singleton_events:N}`.
+## Workflow: Hybrid Event Clustering (redesigned)
+- **Trigger**: Article `status=processed`.
+
+**Step 1**: Load article embeddings from ChromaDB and structured metadata from MongoDB: entities, location entities, `published_at`, source ids, and category hints.
+**Step 2**: Compute pairwise event relatedness using configurable weights:
+- semantic embedding similarity
+- entity overlap
+- location overlap
+- temporal proximity
+- lightweight metadata compatibility
+**Step 3**: Build connected clusters for articles whose weighted relatedness passes the configured hybrid threshold. For larger batches, UMAP+HDBSCAN may still be used as a semantic candidate generator, but final event grouping uses the documented hybrid score.
+**Step 4**: Persist `Event`, `EventArticle`, event centroid embedding, and `hybrid_cluster_metadata`.
+
+**Business Rules**: The clustering workflow may use already-extracted structured signals, but must not use raw keyword/text-overlap matching as a substitute for event detection.
+Phase output: `{phase:"cluster", events_created:N, singleton_events:N, hybrid_signals:["semantic","entity","location","time","metadata"]}`.
 
 ---
 
 ## Workflow: Collective Summarization (updated)
 - **Trigger**: Event `status=clustered` (or gained a new article since last summarized — not applicable mid-run since a run always starts from empty, but kept for architectural consistency).
 
-**Step 1**: Concatenate `cleaned_text` of **all** member articles into one combined text block (most-recent-first, truncated to model context limit).
-**Step 2**: Call Omniroute once with the combined block, requesting `{summary, category}`. Timeout 6–8s.
-**Step 3 (success)**: Validate summary ≤120 words (truncate at sentence boundary if longer); validate category against the fixed enum, defaulting to the majority `category_hint` among member articles if invalid; set `summary_source=omniroute`.
-**Step 3 (failure/timeout/empty)**: Run local TextRank over the same combined block → top-N sentences as `summary`; `category` = majority `category_hint` among member articles, or `OTHER_MILITARY` if none; set `summary_source=textrank_fallback`.
-**Step 4**: Compute `credibility_score = average(member articles' source trust_rating)`.
-**Step 5**: Set `status=summarized`.
+**Step 1**: Assemble an event workspace from **all** member articles: article metadata, source refs, extracted entities, location entities, timestamps, initial claims, potential timeline entries, and potential cross-source conflicts.
+**Step 2**: Call Qwen3-14B primary with the event workspace, requesting structured JSON: `{summary, category, claims, timeline, conflicts, locations}`. Timeout 6–8s.
+**Step 3 (primary failure/timeout/empty)**: Call the configured OpenRouter secondary model with the same event workspace and the same JSON contract.
+**Step 4 (all LLM paths fail/timeout/empty)**: Run structured local fallback over the event workspace. The fallback synthesizes from claims, timeline, entities, conflicts, source refs, and metadata. It must not simply select top sentences, concatenate article excerpts, or pretend extraction is summarization.
+**Step 5**: Validate category against the fixed enum, defaulting to majority `category_hint` among member articles if invalid; store structured fields and `summary_source`.
+**Step 6**: Set `status=summarized`.
 
 **Business Rules**: The summary always reflects the **combined** content of the whole cluster — never generated from just one member article.
 Phase output: `{phase:"summarize", summarized:N, fallback_used:N, failed:N}`.
@@ -82,9 +94,10 @@ Phase output: `{phase:"summarize", summarized:N, fallback_used:N, failed:N}`.
 **Step 1**: Embed the user's message.
 **Step 2**: Vector-search `event_embeddings` top-K (default 5).
 **Step 3**: If best similarity < threshold → `answer_source=no_match`, fixed "no information" text, `citations=[]`. Skip Omniroute entirely.
-**Step 4**: Else, call Omniroute with a grounded prompt (retrieved event summaries as context). Timeout 6–8s.
-**Step 5 (Omniroute success)**: `answer_source=omniroute`, parse answer + citations.
-**Step 5 (Omniroute failure)**: `answer_source=fallback_excerpt` — return the top-matched event's stored `summary` verbatim as the answer, `citations=[that event id]`.
+**Step 4**: Else, assemble event-centric evidence: summaries, claims, timeline, conflicts, source refs, and citations from retrieved events.
+**Step 5**: Call Qwen3-14B primary, then OpenRouter secondary on failure/timeout, using a grounded prompt over the event evidence.
+**Step 6 (LLM success)**: `answer_source=qwen_primary` or `openrouter_secondary`, parse answer + citations.
+**Step 7 (all LLM paths fail)**: `answer_source=structured_fallback` — return a concise answer synthesized from the retrieved event evidence and cite the matched events.
 **Step 6**: Persist user + assistant `ChatMessage` rows under the (anonymous, browser-scoped) session.
 
-**Business Rules**: The assistant is intentionally basic — retrieve, ground, answer, cite; no multi-turn reasoning, no tool use beyond retrieval.
+**Business Rules**: The assistant is event-centric — retrieve events and their structured evidence, ground the answer, and cite stored event/source evidence. It must not answer from unrelated top article chunks.

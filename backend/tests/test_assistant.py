@@ -1,4 +1,4 @@
-﻿"""Unit tests for Phase 9: Grounded RAG Assistant Service & API (FEAT-APP-03 / API-008 / API-009 / TC-013 / TC-014 / TC-015)."""
+"""Unit tests for Phase 9: Grounded RAG Assistant Service & API (FEAT-APP-03 / API-008 / API-009 / TC-013 / TC-014 / TC-015)."""
 
 import asyncio
 from datetime import UTC, datetime
@@ -8,7 +8,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
 
 from app.clients.embedding_client import EmbeddingClient
-from app.clients.omniroute_client import OmnirouteClient
+from app.clients.llm_client import LLMClient
+from app.clients.structured_event_fallback import StructuredEventFallback
 from app.main import app
 from app.models.domain import AnswerSource, ChatMessage, ChatSession, Event, EventStatus
 from app.repositories.chat_message_repository import ChatMessageRepository
@@ -27,7 +28,8 @@ class TestAssistantService(unittest.TestCase):
         self.mock_event_repo = AsyncMock(spec=EventRepository)
         self.mock_chroma_repo = AsyncMock(spec=ChromaRepository)
         self.mock_embedding_client = AsyncMock(spec=EmbeddingClient)
-        self.mock_omniroute_client = AsyncMock(spec=OmnirouteClient)
+        self.mock_llm_client = AsyncMock(spec=LLMClient)
+        self.structured_fallback = StructuredEventFallback()
 
         self.service = AssistantService(
             chat_session_repository=self.mock_session_repo,
@@ -35,12 +37,13 @@ class TestAssistantService(unittest.TestCase):
             event_repository=self.mock_event_repo,
             chroma_repository=self.mock_chroma_repo,
             embedding_client=self.mock_embedding_client,
-            omniroute_client=self.mock_omniroute_client,
+            llm_client=self.mock_llm_client,
+            structured_fallback=self.structured_fallback,
         )
         self.client = TestClient(app)
 
-    def test_no_match_skips_omniroute(self) -> None:
-        """Verify queries with no relevant vector match return no_match and skip Omniroute (TC-015)."""
+    def test_no_match_skips_llm(self) -> None:
+        """Verify queries with no relevant vector match return no_match and skip LLM (TC-015)."""
         valid_id = "665f1a48ae1f6da2f918b3f0"
         self.mock_session_repo.get.return_value = ChatSession(id=valid_id)
         self.mock_embedding_client.embed_batch.return_value = [[0.1] * 384]
@@ -54,11 +57,11 @@ class TestAssistantService(unittest.TestCase):
         self.assertEqual(res["answer"], "I don't have information on that.")
         self.assertEqual(res["citations"], [])
 
-        # Zero calls made to Omniroute (TC-015 requirement)
-        self.mock_omniroute_client.generate_grounded_answer.assert_not_called()
+        # Zero calls made to LLM (TC-015 requirement)
+        self.mock_llm_client.generate_grounded_answer.assert_not_called()
 
-    def test_grounded_answer_omniroute_success(self) -> None:
-        """Verify grounded answer with citations when Omniroute succeeds (TC-013)."""
+    def test_grounded_answer_llm_success(self) -> None:
+        """Verify grounded answer with citations when LLM succeeds (TC-013)."""
         valid_id = "665f1a48ae1f6da2f918b3f0"
         self.mock_session_repo.get.return_value = ChatSession(id=valid_id)
         self.mock_embedding_client.embed_batch.return_value = [[0.1] * 384]
@@ -69,20 +72,21 @@ class TestAssistantService(unittest.TestCase):
         fake_event = Event(id=valid_id, summary="Joint naval drill in Baltic Sea", status=EventStatus.SUMMARIZED)
         self.mock_event_repo.list.return_value = [fake_event]
 
-        # Omniroute succeeds
-        self.mock_omniroute_client.generate_grounded_answer.return_value = (
+        # LLM succeeds
+        self.mock_llm_client.generate_grounded_answer.return_value = (
             "Naval exercises took place in the Baltic Sea.",
             [valid_id],
+            AnswerSource.QWEN_PRIMARY,
         )
 
         res = asyncio.run(self.service.chat_message("Tell me about Baltic drills", session_id=valid_id))
 
-        self.assertEqual(res["answer_source"], "omniroute")
+        self.assertEqual(res["answer_source"], "qwen_primary")
         self.assertEqual(res["answer"], "Naval exercises took place in the Baltic Sea.")
         self.assertEqual(res["citations"], [valid_id])
 
-    def test_fallback_excerpt_on_omniroute_failure(self) -> None:
-        """Verify fallback to verbatim event summary when Omniroute fails (TC-014)."""
+    def test_fallback_excerpt_on_llm_failure(self) -> None:
+        """Verify fallback to structured fallback when LLM fails (TC-014)."""
         valid_id = "665f1a48ae1f6da2f918b3f0"
         self.mock_session_repo.get.return_value = ChatSession(id=valid_id)
         self.mock_embedding_client.embed_batch.return_value = [[0.1] * 384]
@@ -91,12 +95,12 @@ class TestAssistantService(unittest.TestCase):
         fake_event = Event(id=valid_id, summary="Verbatim stored summary of event", status=EventStatus.SUMMARIZED)
         self.mock_event_repo.list.return_value = [fake_event]
 
-        # Omniroute fails (returns None, [])
-        self.mock_omniroute_client.generate_grounded_answer.return_value = (None, [])
+        # LLM fails (returns None, [], None)
+        self.mock_llm_client.generate_grounded_answer.return_value = (None, [], None)
 
         res = asyncio.run(self.service.chat_message("Tell me about Baltic drills", session_id=valid_id))
 
-        self.assertEqual(res["answer_source"], "fallback_excerpt")
+        self.assertEqual(res["answer_source"], "structured_fallback")
         self.assertEqual(res["answer"], "Verbatim stored summary of event")
         self.assertEqual(res["citations"], [valid_id])
 
@@ -110,10 +114,11 @@ class TestAssistantService(unittest.TestCase):
             "session_id": "665f1a48ae1f6da2f918b3f0",
             "answer": "Answer",
             "citations": ["665f1a48ae1f6da2f918b3f0"],
-            "answer_source": "omniroute",
+            "answer_source": "qwen_primary",
         }
         res_valid = self.client.post("/api/assistant/chat", json={"message": "Valid query"})
         self.assertEqual(res_valid.status_code, 200)
+
 
 
 if __name__ == "__main__":

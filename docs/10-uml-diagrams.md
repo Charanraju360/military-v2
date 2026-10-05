@@ -52,7 +52,9 @@ classDiagram
         +string summary
         +string summary_source
         +string category
-        +float credibility_score
+        +array claims
+        +array timeline
+        +array conflicts
         +string status
     }
     class EventArticle {
@@ -143,7 +145,7 @@ sequenceDiagram
         SVC->>OMNI: grounded prompt (timeout 6-8s)
         alt Omniroute responds
             OMNI-->>SVC: answer + citations
-            SVC-->>API: answer_source=omniroute
+            SVC-->>API: answer_source=qwen_primary
         else Omniroute fails/times out
             SVC-->>API: answer_source=fallback_excerpt (event.summary)
         end
@@ -173,8 +175,8 @@ flowchart TD
     N --> O[Cluster: embeddings only]
     O --> P[Collective summarize via Omniroute]
     P --> Q{Omniroute OK?}
-    Q -- yes --> R[summary_source=omniroute]
-    Q -- no --> S[TextRank fallback: summary_source=textrank_fallback]
+    Q -- yes --> R[summary_source=qwen_primary]
+    Q -- no --> S[OpenRouter or structured fallback]
     R --> T[status=summarized]
     S --> T
     T --> U[Pipeline complete, lock released]
@@ -202,7 +204,7 @@ flowchart TB
         SRC[News Sources]
     end
     subgraph Local
-        TR[TextRank Fallback]
+        SF[Structured Fallback]
     end
 
     FE --> API

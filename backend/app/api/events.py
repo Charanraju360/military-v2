@@ -19,7 +19,6 @@ async def list_events(
     category: Category | None = Query(default=None),
     date_from: datetime | None = Query(default=None),
     date_to: datetime | None = Query(default=None),
-    min_credibility: float | None = Query(default=None, ge=0.0, le=100.0),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ) -> dict[str, Any]:
@@ -29,7 +28,6 @@ async def list_events(
         category=category,
         date_from=date_from,
         date_to=date_to,
-        min_credibility=min_credibility,
         page=page,
         page_size=page_size,
     )

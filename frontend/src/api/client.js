@@ -1,4 +1,4 @@
-﻿/** Shared API client supporting all backend REST endpoints without authentication. */
+/** Shared API client supporting all backend REST endpoints without authentication. */
 
 const API_BASE = "/api";
 
@@ -36,9 +36,6 @@ export const apiClient = {
     if (params.category) query.append("category", params.category);
     if (params.date_from) query.append("date_from", params.date_from);
     if (params.date_to) query.append("date_to", params.date_to);
-    if (params.min_credibility !== undefined && params.min_credibility !== null && params.min_credibility !== "") {
-      query.append("min_credibility", params.min_credibility);
-    }
     if (params.page) query.append("page", params.page);
     if (params.page_size) query.append("page_size", params.page_size);
 

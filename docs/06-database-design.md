@@ -17,7 +17,7 @@
 | name | string | yes | — | |
 | type | enum(rss,api,scrape) | yes | — | |
 | url | string | yes | — | |
-| trust_rating | int 0-100 | yes | 50 | |
+| trust_rating | int 0-100 | yes | 50 | legacy source metadata retained for attribution/config compatibility; not used to compute event credibility |
 | active | bool | yes | true | |
 | field_mapping | object | no | — | API sources only: maps canonical fields (`title`, `url`, `published_at`, `content`) to the source API's JSON item field names; canonical names are used when omitted |
 | link_selector | string | no | — | Scrape sources only: CSS selector for article `<a>` elements on the listing page |
@@ -50,9 +50,14 @@ Unchanged: `article_id` FK, `text`, `type`(PERSON/ORG/LOCATION/MISC), `mention_c
 |---|---|---|---|---|
 | _id | ObjectId | yes | auto | |
 | summary | string | no | — | collective summary across ALL member articles |
-| summary_source | enum(omniroute,textrank_fallback) | no | — | which path produced it |
+| summary_source | enum(qwen_primary,openrouter_secondary,structured_fallback) | no | — | which path produced it |
 | category | enum(ATTACK,GEOPOLITICS,PEACE_DEAL,AGREEMENT,DRILL,OTHER_MILITARY) | no | — | |
-| credibility_score | float 0-100 | no | — | avg source trust_rating |
+| claims | array<object> | yes | [] | structured event claims extracted from member articles |
+| timeline | array<object> | yes | [] | dated event timeline entries |
+| conflicts | array<object> | yes | [] | source disagreements or unresolved conflicting details |
+| source_refs | array<object> | yes | [] | source/article attribution used as evidence |
+| locations | array<string> | yes | [] | normalized location entities associated with the event |
+| hybrid_cluster_metadata | object | yes | {} | clustering method, signal weights, thresholds, and diagnostics |
 | article_count | int | yes | 0 | |
 | status | enum(clustered,summarized) | yes | clustered | |
 | centroid_embedding_id | string | no | — | |
@@ -64,7 +69,7 @@ Unchanged: `event_id` FK, `article_id` FK, unique pair, `article_id` unique over
 
 ### 3.6 `chat_sessions` / `chat_messages`
 Unchanged, **minus `user_id`** (no users) — a session is just an anonymous conversation thread, identified by a client-generated/browser-stored session id.
-`chat_messages` gains: `answer_source` enum(`omniroute`,`fallback_excerpt`,`no_match`) on assistant messages.
+`chat_messages` gains: `answer_source` enum(`qwen_primary`,`openrouter_secondary`,`structured_fallback`,`no_match`) on assistant messages.
 
 ### 3.7 `pipeline_logs` (NEW)
 | Column | Type | Required | Notes |
@@ -105,7 +110,7 @@ erDiagram
     SOURCES { ObjectId id PK  string type  string url  int trust_rating }
     ARTICLES { ObjectId id PK  ObjectId source_id FK  datetime published_at  string status }
     ENTITIES { ObjectId id PK  ObjectId article_id FK  string type }
-    EVENTS { ObjectId id PK  string summary  string summary_source  string category  float credibility_score }
+    EVENTS { ObjectId id PK  string summary  string summary_source  string category  array claims  array timeline  array conflicts }
     EVENT_ARTICLES { ObjectId id PK  ObjectId event_id FK  ObjectId article_id FK }
     CHAT_SESSIONS { ObjectId id PK }
     CHAT_MESSAGES { ObjectId id PK  ObjectId session_id FK  string answer_source }
@@ -131,8 +136,9 @@ erDiagram
 ```json
 // events
 { "_id":"665f1a...", "summary":"Joint naval drills took place in the Baltic Sea this week, involving three NATO members...",
-  "summary_source":"omniroute", "category":"DRILL", "credibility_score":78.5, "article_count":4,
-  "status":"summarized", "latest_article_at":"2026-08-20T10:15:00Z" }
+  "summary_source":"qwen_primary", "category":"DRILL", "claims":[{"text":"Multiple reports describe naval drills in the Baltic Sea.","article_ids":["665..."]}],
+  "timeline":[{"date":"2026-08-20T10:15:00Z","description":"Latest member report published."}],
+  "conflicts":[], "article_count":4, "status":"summarized", "latest_article_at":"2026-08-20T10:15:00Z" }
 
 // pipeline_logs
 { "_id":"665f9a...", "started_at":"2026-08-28T09:00:00Z", "completed_at":"2026-08-28T09:02:14Z",

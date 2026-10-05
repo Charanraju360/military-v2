@@ -40,7 +40,6 @@ class EventService:
         category: Category | None = None,
         date_from: datetime | None = None,
         date_to: datetime | None = None,
-        min_credibility: float | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> dict[str, Any]:
@@ -50,7 +49,6 @@ class EventService:
             category=category,
             date_from=date_from,
             date_to=date_to,
-            min_credibility=min_credibility,
             page=page,
             page_size=page_size,
         )
@@ -65,9 +63,6 @@ class EventService:
             if date_to is not None:
                 date_range["$lte"] = date_to
             query["latest_article_at"] = date_range
-        if min_credibility is not None:
-            query["credibility_score"] = {"$gte": min_credibility}
-
         total = await self._event_repository.count(query)
 
         event_items = [
@@ -76,7 +71,6 @@ class EventService:
                 "category": evt.category,
                 "summary": evt.summary,
                 "summary_source": evt.summary_source,
-                "credibility_score": evt.credibility_score,
                 "article_count": evt.article_count,
                 "first_article_at": evt.first_article_at,
                 "latest_article_at": evt.latest_article_at,
@@ -146,7 +140,12 @@ class EventService:
             "summary": event.summary,
             "summary_source": event.summary_source,
             "category": event.category,
-            "credibility_score": event.credibility_score,
+            "claims": event.claims,
+            "timeline": event.timeline,
+            "conflicts": event.conflicts,
+            "locations": event.locations,
+            "source_refs": event.source_refs,
+            "uncertainty_statements": event.uncertainty_statements,
             "article_count": event.article_count,
             "first_article_at": event.first_article_at,
             "latest_article_at": event.latest_article_at,

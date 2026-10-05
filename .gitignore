@@ -31,3 +31,9 @@ claude1.md
 codex.md
 *.prompt
 
+# Temporary test data and caches
+chroma_data/
+backend/scratch_test_embed.py
+military_osint_documentation_pack.zip
+military_osint_documentation_pack/
+

@@ -45,10 +45,10 @@ Base path: `/api`. **No authentication on any endpoint** — fully public.
 ### API-005 — List Events
 - **Endpoint**: `/api/events`
 - **Method**: GET
-- **Query Parameters**: `category` (ATTACK|GEOPOLITICS|PEACE_DEAL|AGREEMENT|DRILL|OTHER_MILITARY), `date_from`, `date_to`, `min_credibility`, `page`, `page_size`
+- **Query Parameters**: `category` (ATTACK|GEOPOLITICS|PEACE_DEAL|AGREEMENT|DRILL|OTHER_MILITARY), `date_from`, `date_to`, `page`, `page_size`
 - **Success Response** (200):
 ```json
-{ "items": [ { "id":"665f1a...", "category":"DRILL", "summary":"...", "credibility_score":78.5,
+{ "items": [ { "id":"665f1a...", "category":"DRILL", "summary":"...",
   "article_count":4, "latest_article_at":"2026-08-20T10:15:00Z" } ], "page":1, "total":7 }
 ```
 
@@ -57,8 +57,10 @@ Base path: `/api`. **No authentication on any endpoint** — fully public.
 - **Method**: GET
 - **Success Response** (200):
 ```json
-{ "id":"665f1a...", "summary":"...", "summary_source":"omniroute", "category":"DRILL",
-  "credibility_score":78.5,
+{ "id":"665f1a...", "summary":"...", "summary_source":"qwen_primary", "category":"DRILL",
+  "claims":[{"text":"...","article_ids":["665e02..."]}],
+  "timeline":[{"date":"2026-08-19T08:00:00Z","description":"..."}],
+  "conflicts":[],
   "articles":[ { "id":"665e02...", "title":"...", "source":"Reuters", "url":"...", "published_at":"2026-08-19T08:00:00Z" } ],
   "entities":[ {"text":"NATO","type":"ORG"} ] }
 ```
@@ -86,11 +88,15 @@ Base path: `/api`. **No authentication on any endpoint** — fully public.
 - **Success Response** (200):
 ```json
 { "session_id":"665c00...", "answer":"This week, a joint naval drill took place in the Baltic Sea...",
-  "citations":["665f1a..."], "answer_source":"omniroute" }
+  "citations":["665f1a..."], "answer_source":"qwen_primary" }
 ```
-- On Omniroute failure with a relevant match:
+- On Qwen failure with a relevant match and OpenRouter success:
 ```json
-{ "session_id":"665c00...", "answer":"<event's stored summary verbatim>", "citations":["665f1a..."], "answer_source":"fallback_excerpt" }
+{ "session_id":"665c00...", "answer":"...", "citations":["665f1a..."], "answer_source":"openrouter_secondary" }
+```
+- On all LLM paths failing with a relevant match:
+```json
+{ "session_id":"665c00...", "answer":"<structured answer from stored event evidence>", "citations":["665f1a..."], "answer_source":"structured_fallback" }
 ```
 - On no relevant match:
 ```json
@@ -101,7 +107,7 @@ Base path: `/api`. **No authentication on any endpoint** — fully public.
 ### API-009 — Get Session Messages
 - **Endpoint**: `/api/assistant/sessions/{session_id}/messages`
 - **Method**: GET
-- **Success Response** (200): `{ "items":[ {"role":"user","text":"..."}, {"role":"assistant","text":"...","citations":[...],"answer_source":"omniroute"} ] }`
+- **Success Response** (200): `{ "items":[ {"role":"user","text":"..."}, {"role":"assistant","text":"...","citations":[...],"answer_source":"qwen_primary"} ] }`
 
 ---
 

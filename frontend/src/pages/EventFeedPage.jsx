@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 
 import Navbar, { navigate } from "../components/Navbar";
@@ -15,7 +15,6 @@ export default function EventFeedPage() {
 
   // Filters
   const [category, setCategory] = useState("");
-  const [minCredibility, setMinCredibility] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
@@ -25,7 +24,6 @@ export default function EventFeedPage() {
     try {
       const params = { page, page_size: 12 };
       if (category) params.category = category;
-      if (minCredibility) params.min_credibility = parseFloat(minCredibility);
       if (dateFrom) params.date_from = new Date(dateFrom).toISOString();
       if (dateTo) params.date_to = new Date(dateTo).toISOString();
 
@@ -41,7 +39,7 @@ export default function EventFeedPage() {
 
   useEffect(() => {
     loadEvents();
-  }, [page, category, minCredibility, dateFrom, dateTo]);
+  }, [page, category, dateFrom, dateTo]);
 
   const formatDate = (isoString) => {
     if (!isoString) return "N/A";
@@ -108,24 +106,6 @@ export default function EventFeedPage() {
               </select>
             </div>
 
-            {/* Min Credibility */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase text-slate-400">
-                Min Credibility ({minCredibility || 0}%)
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={minCredibility || 0}
-                onChange={(e) => {
-                  setMinCredibility(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full accent-indigo-500 cursor-pointer"
-              />
-            </div>
-
             {/* Date From */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase text-slate-400">Date From</label>
@@ -161,7 +141,6 @@ export default function EventFeedPage() {
               className="w-full"
               onClick={() => {
                 setCategory("");
-                setMinCredibility("");
                 setDateFrom("");
                 setDateTo("");
                 setPage(1);
@@ -216,17 +195,6 @@ export default function EventFeedPage() {
                       <div className="flex items-center justify-between gap-2">
                         <Badge variant={evt.category || "OTHER_MILITARY"}>
                           {evt.category || "OTHER_MILITARY"}
-                        </Badge>
-                        <Badge
-                          variant={
-                            (evt.credibility_score || 50) >= 75
-                              ? "high_trust"
-                              : (evt.credibility_score || 50) >= 50
-                              ? "mid_trust"
-                              : "low_trust"
-                          }
-                        >
-                          {Math.round(evt.credibility_score || 50)}% Credibility
                         </Badge>
                       </div>
 

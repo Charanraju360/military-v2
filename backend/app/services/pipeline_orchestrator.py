@@ -145,6 +145,7 @@ class PipelineOrchestrator:
                 article_repository=self._article_repository,
                 event_repository=self._event_repository,
                 event_article_repository=self._event_article_repository,
+                entity_repository=self._entity_repository,
                 chroma_repository=self._chroma_repository,
             )
         return self._clustering_service_instance
@@ -161,6 +162,7 @@ class PipelineOrchestrator:
                 event_repository=self._event_repository,
                 event_article_repository=self._event_article_repository,
                 article_repository=self._article_repository,
+                entity_repository=self._entity_repository,
                 source_repository=self._source_repository,
             )
         return self._summarization_service_instance

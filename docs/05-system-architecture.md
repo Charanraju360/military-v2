@@ -12,10 +12,10 @@ Modular monolith, no auth layer. One FastAPI backend (manual pipeline control + 
 | Primary DB | MongoDB Atlas (cloud) | via `MONGODB_URI` connection string |
 | Vector store | ChromaDB | Embeddings for clustering + semantic search + RAG |
 | Embedding model | BGE/E5-family (batch-capable) | Vector generation |
-| Clustering | UMAP + HDBSCAN | Meaning-only event grouping |
+| Clustering | Hybrid event clustering | Semantic embeddings plus entity, time, location, and metadata signals |
 | NER | spaCy / GLiNER (batch-capable) | Entity extraction |
 | HTML parsing | Beautiful Soup | RSS and configured scrape-source extraction, including CSS selectors |
-| Summarization/RAG | Omniroute (primary) → TextRank (local fallback, summarization only) | Event summaries, assistant answers |
+| Summarization/RAG | Qwen3-14B primary → OpenRouter secondary → structured local fallback | Event summaries, assistant answers |
 | Auth | **None** | Public access to everything |
 
 ## 3. High-Level Architecture Diagram
@@ -26,13 +26,15 @@ flowchart TD
     FE -->|REST/JSON| API[FastAPI Backend]
     API --> ATLAS[(MongoDB Atlas)]
     API --> VEC[(ChromaDB)]
-    API --> OMNI[Omniroute API]
+    API --> QWEN[Qwen3-14B tunnel]
+    API --> OR[OpenRouter secondary LLM]
     FE -->|Run Pipeline / Clean DB| API
     API --> PIPE[Pipeline Orchestrator]
     PIPE --> ATLAS
     PIPE --> VEC
-    PIPE --> OMNI
-    PIPE --> TR[Local TextRank Fallback]
+    PIPE --> QWEN
+    PIPE --> OR
+    PIPE --> SF[Structured Local Fallback]
     SRC[RSS / News APIs / Scraped Pages] --> PIPE
 ```
 
@@ -43,7 +45,7 @@ flowchart TD
 
 ## 5. Backend Architecture
 - **Routers**: `events.py`, `search.py`, `assistant.py`, `sources.py`, `pipeline.py` — no `auth.py`, no admin split.
-- **Services**: `ingestion_service.py`, `cleaning_service.py`, `topic_filter_service.py` (NEW), `ner_embedding_service.py` (batch-capable), `clustering_service.py`, `summarization_service.py` (Omniroute+TextRank fallback), `event_service.py`, `search_service.py`, `assistant_service.py`, `pipeline_orchestrator.py` (NEW — coordinates phases, emits/persists JSON, manages run lock).
+- **Services**: `ingestion_service.py`, `cleaning_service.py`, `topic_filter_service.py`, `ner_embedding_service.py` (batch-capable), `clustering_service.py` (hybrid event clustering), `summarization_service.py` (Qwen→OpenRouter→structured fallback), `event_service.py`, `search_service.py`, `assistant_service.py`, `pipeline_orchestrator.py` (coordinates phases, emits/persists JSON, manages run lock).
 - **Repositories**: unchanged pattern, plus `pipeline_log_repository.py`.
 - No auth middleware. Standard error-handling + request-logging middleware remain.
 
@@ -52,8 +54,9 @@ flowchart TD
 - ChromaDB local client; `article_embeddings` and `event_embeddings` collections; IDs match Mongo `_id`.
 
 ## 7. External Services
-- **Omniroute**: single client wrapper `omniroute_client.py`, hard timeout, used for topic-filter borderline calls, event summarization, and assistant answers.
-- **TextRank**: local library (e.g., `sumy`), no network call — used only as summarization fallback.
+- **Qwen3-14B**: primary LLM, hosted externally (for example in Colab) behind a configurable tunnel endpoint. The tunnel URL and credential are environment configuration only.
+- **OpenRouter**: secondary LLM path. Model name, endpoint, and credential are configurable.
+- **Structured local fallback**: deterministic event synthesis from available claims, entities, timeline, source references, conflicts, and article metadata. It must not merely return top sentences or concatenate article excerpts.
 - **News sources**: RSS/API/scrape per `sources` config (public-editable, no auth gate).
 
 ## 8. Data Flow
@@ -64,8 +67,8 @@ flowchart TD
    → Cleaner → Article[cleaned]
    → Topic Filter → Article[filtered_ok] or [rejected: off_topic]
    → Batch NER+Embed → Entity[], vectors, Article[processed]
-   → Clustering (embeddings only) → Event + EventArticle
-   → Collective Summarize (Omniroute→TextRank fallback) → Event[summarized]
+   → Hybrid Clustering (semantic + entity + time + location + metadata signals) → Event + EventArticle
+   → Collective Event Intelligence Summarize (Qwen→OpenRouter→structured fallback) → Event[summarized]
    → each phase emits JSON, persisted to pipeline_logs
 → Public API/Dashboard reads finished Events at any time (independent of pipeline state)
 ```
@@ -85,12 +88,12 @@ flowchart TD
 | Pipeline Orchestrator | Run-lock, wipe, phase sequencing, JSON status emission/persistence |
 | Collector | Fetch, dedupe, store raw articles + dates |
 | Cleaner | Normalize text |
-| Topic Filter | Keyword pre-filter + Omniroute borderline classification; reject non-military |
+| Topic Filter | Keyword pre-filter + Qwen/OpenRouter borderline classification; reject non-military |
 | NER+Embedding | Batch entity extraction + embedding generation |
-| Clustering | Meaning-only (embedding) event grouping |
-| Summarizer | Collective per-event summary, Omniroute→TextRank fallback |
+| Clustering | Hybrid event grouping from vectors, entities, time, location, and metadata |
+| Summarizer | Collective event intelligence synthesis with claims, timeline, conflicts, and structured fallback |
 | Event/Search Service | Public read/filter/search APIs |
-| Assistant Service | RAG retrieval + Omniroute answer, excerpt fallback |
+| Assistant Service | Event-centric retrieval + Qwen/OpenRouter grounded answer, structured fallback |
 
 ## 11. Architectural Decisions
 
@@ -98,8 +101,8 @@ flowchart TD
 |---|---|---|
 | Auth | None | Single-user public tool per project requirement — removes login friction entirely |
 | DB hosting | MongoDB Atlas | Cloud, connection-string based, no local Mongo ops needed |
-| Clustering signal | Embeddings only | Explicit project requirement — keyword logic banned from grouping step |
-| Summarization provider | Omniroute primary | Chosen by project owner; TextRank fallback keeps pipeline from stalling on provider outage |
+| Clustering signal | Hybrid signals | Redesigned architecture uses semantic vectors plus entities, time, location, and metadata so related reports form event-centric clusters |
+| Summarization provider | Qwen3-14B primary, OpenRouter secondary | Matches the pinned redesign; structured local fallback prevents provider outage from blocking the pipeline |
 | Topic filter | Keyword pre-filter + LLM fallback | Keeps latency/cost down — LLM only called for ambiguous cases |
 | Scheduling | Removed entirely | Replaced by manual trigger + full-wipe-per-run, per explicit requirement |
 | NER/Embedding calls | Batched | Reduces per-article call overhead → lower total latency |
@@ -130,9 +133,9 @@ osint-eip/
 │       ├── repositories/
 │       ├── models/
 │       ├── clients/
-│       │   ├── omniroute_client.py
+│       │   ├── llm_client.py
 │       │   ├── embedding_client.py
-│       │   └── textrank_fallback.py
+│       │   └── structured_event_fallback.py
 │       ├── config.py
 │       └── main.py
 ├── frontend/
