@@ -3,7 +3,6 @@ import { apiClient } from "../api/client";
 import {
   AssistantIcon,
   EventsIcon,
-  LogoMark,
   MoonIcon,
   OverviewIcon,
   PipelineIcon,
@@ -79,9 +78,6 @@ export default function Navbar() {
             className="flex items-center space-x-3 cursor-pointer select-none group"
             onClick={() => navigate("/")}
           >
-            <div className="w-8 h-8 rounded border border-[#E0D9CD] bg-[#F7F5F0] flex items-center justify-center text-[#C96A4A] group-hover:border-[#C96A4A]/50 transition-colors">
-              <LogoMark size={18} />
-            </div>
             <div className="flex flex-col">
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-sm tracking-tight text-[#25231F]">
