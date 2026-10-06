@@ -63,12 +63,35 @@ class LLMClient:
     ) -> tuple[dict[str, Any] | None, SummarySource | None]:
         """Generate structured event synthesis with provider fallback."""
 
+        # Assemble clean article excerpts so the LLM has direct access to full narrative facts
+        evidence_articles: list[str] = []
+        for ref in workspace.get("source_refs", []):
+            title = ref.get("title", "Dispatch")
+            src = ref.get("source_name", "Open Source")
+            published = ref.get("published_at", "Recent")
+            excerpt = ref.get("text_excerpt", "")
+            evidence_articles.append(
+                f"- [Source: {src} | Published: {published} | Title: {title}]\n"
+                f"  Article Details: {excerpt}"
+            )
+        articles_block = "\n\n".join(evidence_articles)
+
         prompt = (
-            "You are synthesizing a military OSINT event from structured evidence.\n"
-            "Use only the evidence provided. Preserve uncertainty and conflicts.\n"
-            "Return JSON only with fields: summary, category, claims, timeline, conflicts, "
-            "locations, uncertainty_statements. Do not select top sentences.\n\n"
-            f"EVENT_WORKSPACE_JSON:\n{json.dumps(workspace, default=str)[:12000]}"
+            "You are a senior defense intelligence officer compiling a comprehensive OSINT intelligence event briefing.\n\n"
+            "CRITICAL MANDATORY INSTRUCTIONS FOR THE 'summary' FIELD:\n"
+            "- The 'summary' MUST be an extensive, detailed synthesis of AT LEAST 4 TO 6 FULL SUBSTANTIVE SENTENCES (forming at least 4 to 5 full lines of rich reporting).\n"
+            "- UNDER NO CIRCUMSTANCES should you output a brief 1-line or 2-line summary. Short 1-2 sentence summaries are strictly unacceptable and fail quality standards.\n"
+            "- You must thoroughly detail everything contained in the source articles:\n"
+            "  1. Strategic Situation & Tactical Actions: Detail the main military event, tactical maneuvers, strikes, deployments, or agreements described.\n"
+            "  2. Specific Actors & Units: Name all specific countries, armed forces, defense ministries, military units, command officials, or defense contractors involved.\n"
+            "  3. Platforms, Weapons & Quantities: Explicitly include all weapon types, aircraft, ships, missiles, drones, platforms, dollar amounts, and troop numbers cited.\n"
+            "  4. Operational Context & Discrepancies: Detail the geographical locations, geopolitical ramifications, timeline developments, and any conflicting claims or uncertainties.\n\n"
+            f"SOURCE ARTICLES TO SYNTHESIZE:\n{articles_block[:10000]}\n\n"
+            f"STRUCTURED EVIDENCE (Claims, Entities, Timeline):\n"
+            f"{json.dumps({'claims': workspace.get('claims', []), 'entities': workspace.get('entities', [])[:30], 'timeline': workspace.get('timeline', []), 'locations': workspace.get('locations', [])}, default=str)[:3500]}\n\n"
+            "OUTPUT FORMAT:\n"
+            "Return valid JSON ONLY with exact keys: summary, category, claims, timeline, conflicts, locations, uncertainty_statements.\n"
+            "Do not wrap in markdown quotes if possible, output pure JSON."
         )
         for provider in self._available_providers(timeout):
             parsed = await self._chat_json(provider, prompt, temperature=0.2)

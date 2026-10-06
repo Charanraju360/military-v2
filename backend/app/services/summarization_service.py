@@ -185,3 +185,6 @@ class SummarizationService:
 
     def _list_field(self, value: Any) -> list[Any]:
         return value if isinstance(value, list) else []
+
+
+

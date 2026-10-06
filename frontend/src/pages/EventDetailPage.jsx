@@ -179,7 +179,7 @@ export default function EventDetailPage() {
                 Executive Summary
               </h2>
               <div className="bg-[#FCFBF9] border border-[#EBE7DF] rounded p-4 sm:p-5">
-                <p className="text-sm sm:text-base text-[#25231F] font-serif leading-relaxed">
+                <p className="text-sm sm:text-base text-[#25231F] dark:text-[#E8E4DD] font-serif leading-relaxed whitespace-pre-line">
                   {event.summary || "No collective summary available."}
                 </p>
               </div>

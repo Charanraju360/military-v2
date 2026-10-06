@@ -175,12 +175,20 @@ class IngestionService:
                 continue
             try:
                 title_val = self._item_value(item, mapping, "title")
-                content_val = self._item_value(item, mapping, "content", required=False) or title_val
+                content_val = self._item_value(item, mapping, "content", required=False)
+                desc_val = item.get("description") if isinstance(item, dict) else None
+
+                # Combine or select the richest available text to capture comprehensive article content
+                if desc_val and content_val and str(desc_val).strip() != str(content_val).strip():
+                    combined_content = f"{desc_val}\n\n{content_val}"
+                else:
+                    combined_content = content_val or desc_val or title_val
+
                 articles.append(
                     self._candidate(
                         title_val,
                         self._item_value(item, mapping, "url"),
-                        content_val,
+                        combined_content,
                         self._item_value(item, mapping, "published_at", required=False),
                         fetched_at,
                     )
@@ -283,12 +291,16 @@ class IngestionService:
 
     @classmethod
     def _xml_text(cls, element: ElementTree.Element, names: set[str]) -> str | None:
+        candidates: list[str] = []
         for child in element.iter():
             if child is element or cls._local_name(child.tag) not in names:
                 continue
             if child.text and child.text.strip():
-                return child.text.strip()
-        return None
+                candidates.append(child.text.strip())
+        if not candidates:
+            return None
+        # Prioritize the most detailed text (e.g. encoded/content bodies over short RSS teaser descriptions)
+        return max(candidates, key=len)
 
     @classmethod
     def _rss_link(cls, item: ElementTree.Element) -> str | None:

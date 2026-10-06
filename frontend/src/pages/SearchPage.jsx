@@ -214,7 +214,7 @@ export default function SearchPage() {
                     </div>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-[#302E2A] leading-relaxed line-clamp-3">
+                  <p className="text-xs sm:text-sm text-[#302E2A] leading-relaxed line-clamp-5 whitespace-pre-line">
                     {item.summary}
                   </p>
 

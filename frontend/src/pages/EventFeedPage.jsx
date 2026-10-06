@@ -310,7 +310,7 @@ export default function EventFeedPage() {
                       </h2>
 
                       {/* Summary Excerpt */}
-                      <p className="text-xs sm:text-sm text-[#47423B] leading-relaxed line-clamp-3">
+                      <p className="text-xs sm:text-sm text-[#47423B] leading-relaxed line-clamp-5 whitespace-pre-line">
                         {evt.summary || "No collective summary text available."}
                       </p>
 

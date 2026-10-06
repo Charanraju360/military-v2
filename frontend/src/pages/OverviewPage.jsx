@@ -271,7 +271,7 @@ export default function OverviewPage() {
                       </div>
                     </div>
 
-                    <p className="text-sm text-[#302E2A] leading-relaxed line-clamp-3">
+                    <p className="text-sm text-[#302E2A] leading-relaxed line-clamp-5 whitespace-pre-line">
                       {evt.summary || "No collective summary available."}
                     </p>
 
