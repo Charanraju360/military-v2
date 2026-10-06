@@ -69,41 +69,41 @@ export default function EntitiesPage() {
   const types = ["ORG", "LOC", "PERSON", "MISC"];
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] flex flex-col font-sans transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#DDD2A8] dark:border-[#343B2A]">
           <div>
-            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+            <div className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] tracking-wider">
               Entity Intelligence / Knowledge Extraction
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#191F0E] dark:text-[#F1E8C7] mt-1">
               Extracted Entities & Actor Directory
             </h1>
-            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+            <p className="text-xs sm:text-sm text-[#555C3E] dark:text-[#CBD1B4] mt-1">
               Named defense entities, military organizations, operational theatres, and key figures extracted via spaCy/GLiNER NER.
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 text-xs font-mono text-[#858078]">
+          <div className="flex items-center space-x-2 text-xs font-mono text-[#6A734D] dark:text-[#B5BC94]">
             <span>{entitiesList.length} entities tracked</span>
           </div>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-mono uppercase text-[#706D66]">Classification:</span>
+            <span className="text-xs font-mono uppercase text-[#6A734D] dark:text-[#B5BC94]">Classification:</span>
             <div className="flex flex-wrap gap-1">
               <button
                 type="button"
                 onClick={() => setSelectedType("")}
                 className={`px-2.5 py-1 text-xs rounded border transition-colors ${
                   selectedType === ""
-                    ? "bg-[#C96A4A] text-white border-[#B85C3E]"
-                    : "bg-[#FCFBF9] text-[#47423B] border-[#DEDAD2] hover:bg-[#F2EFE8]"
+                    ? "bg-[#9CA764] text-[#191F0E] font-semibold border-[#8B9654]"
+                    : "bg-[#FCF9EF] dark:bg-[#161912] text-[#555C3E] dark:text-[#CBD1B4] border-[#DDD2A8] dark:border-[#343B2A] hover:bg-[#F4EED9] dark:hover:bg-[#252B1F]"
                 }`}
               >
                 All
@@ -115,8 +115,8 @@ export default function EntitiesPage() {
                   onClick={() => setSelectedType(t)}
                   className={`px-2.5 py-1 text-xs rounded border transition-colors ${
                     selectedType === t
-                      ? "bg-[#C96A4A] text-white border-[#B85C3E]"
-                      : "bg-[#FCFBF9] text-[#47423B] border-[#DEDAD2] hover:bg-[#F2EFE8]"
+                      ? "bg-[#9CA764] text-[#191F0E] font-semibold border-[#8B9654]"
+                      : "bg-[#FCF9EF] dark:bg-[#161912] text-[#555C3E] dark:text-[#CBD1B4] border-[#DDD2A8] dark:border-[#343B2A] hover:bg-[#F4EED9] dark:hover:bg-[#252B1F]"
                   }`}
                 >
                   {t}
@@ -131,7 +131,7 @@ export default function EntitiesPage() {
               placeholder="Search entity name..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3 py-1.5 text-xs text-[#25231F] placeholder-[#8F8A80] focus:border-[#C96A4A] focus:outline-none"
+              className="w-full bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md px-3 py-1.5 text-xs text-[#191F0E] dark:text-[#F1E8C7] placeholder-[#8C887B] focus:border-[#9CA764] focus:outline-none"
             />
           </div>
         </div>
@@ -142,16 +142,16 @@ export default function EntitiesPage() {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-5 h-28 animate-pulse space-y-2"
+                className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-5 h-28 animate-pulse space-y-2"
               >
-                <div className="h-4 bg-[#F0EDE6] rounded w-1/3"></div>
-                <div className="h-6 bg-[#F0EDE6] rounded w-3/4"></div>
+                <div className="h-4 bg-[#F1E8C7] dark:bg-[#252B1F] rounded w-1/3"></div>
+                <div className="h-6 bg-[#F1E8C7] dark:bg-[#252B1F] rounded w-3/4"></div>
               </div>
             ))}
           </div>
         ) : entitiesList.length === 0 ? (
-          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-10 text-center text-[#706D66] space-y-2">
-            <h3 className="font-serif font-medium text-base text-[#25231F]">
+          <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-10 text-center text-[#6A734D] dark:text-[#CBD1B4] space-y-2">
+            <h3 className="font-serif font-medium text-base text-[#191F0E] dark:text-[#F1E8C7]">
               No extracted entities found
             </h3>
             <p className="text-xs">
@@ -163,23 +163,23 @@ export default function EntitiesPage() {
             {entitiesList.map((ent, idx) => (
               <div
                 key={idx}
-                className="bg-[#FFFFFF] border border-[#E6E2DA] hover:border-[#D0C9BC] rounded-md p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors space-y-2.5"
+                className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] hover:border-[#9CA764] dark:hover:border-[#9CA764] rounded-md p-4 shadow-sm transition-colors space-y-2.5"
               >
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-mono uppercase px-1.5 py-0.5 rounded bg-[#F0EDE6] border border-[#DDD7CD] text-[#5C574F]">
+                  <span className="font-mono uppercase px-1.5 py-0.5 rounded bg-[#F1E8C7] dark:bg-[#252B1F] border border-[#DDD2A8] dark:border-[#343B2A] text-[#555C3E] dark:text-[#CBD1B4]">
                     {ent.type}
                   </span>
-                  <span className="font-mono text-[#858078]">
+                  <span className="font-mono text-[#6A734D] dark:text-[#B5BC94]">
                     {ent.count} mention(s) across {ent.events.length} event(s)
                   </span>
                 </div>
 
-                <h3 className="text-sm font-semibold text-[#25231F] truncate">
+                <h3 className="text-sm font-semibold text-[#191F0E] dark:text-[#F1E8C7] truncate">
                   {ent.text}
                 </h3>
 
-                <div className="pt-2 border-t border-[#F0EDE6] space-y-1">
-                  <span className="text-[10px] font-mono uppercase text-[#858078] block">
+                <div className="pt-2 border-t border-[#DDD2A8] dark:border-[#343B2A] space-y-1">
+                  <span className="text-[10px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] block">
                     Associated Events:
                   </span>
                   <div className="space-y-1">
@@ -187,7 +187,7 @@ export default function EntitiesPage() {
                       <div
                         key={ev.id}
                         onClick={() => navigate(`/events/${ev.id}`)}
-                        className="text-xs text-[#C96A4A] hover:underline cursor-pointer truncate"
+                        className="text-xs text-[#4F6830] dark:text-[#9CA764] hover:underline cursor-pointer truncate"
                       >
                         • #{ev.id.slice(-6)}: {ev.summary ? ev.summary.slice(0, 50) + "..." : "Event"}
                       </div>

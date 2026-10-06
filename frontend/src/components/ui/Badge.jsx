@@ -3,36 +3,37 @@ import React from "react";
 export default function Badge({ children, variant = "default", className = "" }) {
   const variants = {
     default:
-      "bg-[#F0EDE6] dark:bg-[#2A2823] text-[#5A554E] dark:text-[#C5BFB5] border-[#E2DDD3] dark:border-[#3D3A33]",
+      "bg-[#EFE9CF] dark:bg-[#282D20] text-[#424933] dark:text-[#D8CFB0] border-[#D4C796] dark:border-[#3E4632]",
+    
     // Categories
     ATTACK:
-      "bg-[#FDF2F2] dark:bg-[#341818] text-[#9B3838] dark:text-[#E57373] border-[#EFC7C7] dark:border-[#522525]",
+      "bg-[#F7EBE8] dark:bg-[#2B1B19] text-[#8C3A35] dark:text-[#E58079] border-[#E8C7C1] dark:border-[#4E2B27]",
     GEOPOLITICS:
-      "bg-[#F2F5F8] dark:bg-[#182330] text-[#3D566E] dark:text-[#90CAF9] border-[#CFDCE6] dark:border-[#25394E]",
+      "bg-[#EBF0EE] dark:bg-[#1A2623] text-[#3D5A54] dark:text-[#88BFB6] border-[#CAD9D5] dark:border-[#2C423E]",
     PEACE_DEAL:
-      "bg-[#F0F5F1] dark:bg-[#18291C] text-[#3C5E40] dark:text-[#81C784] border-[#CFDFC8] dark:border-[#25422B]",
+      "bg-[#ECF2DC] dark:bg-[#1E2815] text-[#486328] dark:text-[#A7CE78] border-[#CFDDAB] dark:border-[#354824]",
     AGREEMENT:
-      "bg-[#EFF6F5] dark:bg-[#162726] text-[#2C5F5E] dark:text-[#80CBC4] border-[#CDE3E1] dark:border-[#254240]",
+      "bg-[#EDF2DF] dark:bg-[#1E2717] text-[#425C2B] dark:text-[#A3C77E] border-[#D0DDBC] dark:border-[#354826]",
     DRILL:
-      "bg-[#FBF5EB] dark:bg-[#332512] text-[#8C5E1B] dark:text-[#FFB74D] border-[#ECD8B3] dark:border-[#523B1E]",
+      "bg-[#F4EED8] dark:bg-[#2A2415] text-[#7C6321] dark:text-[#E2BD68] border-[#DFD3A7] dark:border-[#4B3E21]",
     OTHER_MILITARY:
-      "bg-[#F5F2ED] dark:bg-[#282622] text-[#635B50] dark:text-[#BCAAA4] border-[#DDD5C8] dark:border-[#3E3A34]",
+      "bg-[#EFE9CF] dark:bg-[#252B1E] text-[#4E5636] dark:text-[#C5BE9E] border-[#DCD3AF] dark:border-[#3E4632]",
 
     // Model provenance
     qwen_primary:
-      "bg-[#FBF1ED] dark:bg-[#331E17] text-[#B85C3E] dark:text-[#FF8A65] border-[#ECCDC1] dark:border-[#543024]",
+      "bg-[#EBF0D8] dark:bg-[#242D18] text-[#435224] dark:text-[#B6C983] border-[#C8D69F] dark:border-[#3E4D27]",
     openrouter_secondary:
-      "bg-[#F2F4F7] dark:bg-[#212429] text-[#4A5568] dark:text-[#B0BEC5] border-[#D0D7DE] dark:border-[#374151]",
+      "bg-[#ECE8D7] dark:bg-[#24251E] text-[#555843] dark:text-[#BCB8A0] border-[#D6D0B9] dark:border-[#3D3E31]",
     structured_fallback:
-      "bg-[#F9F7F2] dark:bg-[#2A261D] text-[#7A6843] dark:text-[#FFE082] border-[#E4DCBF] dark:border-[#4A4230]",
+      "bg-[#F5ECCF] dark:bg-[#2C2717] text-[#695D34] dark:text-[#DEC989] border-[#E2D5A6] dark:border-[#4A4125]",
 
     // Operational
     active:
-      "bg-[#F0F5F1] dark:bg-[#18291C] text-[#3C5E40] dark:text-[#81C784] border-[#CFDFC8] dark:border-[#25422B]",
+      "bg-[#ECF2DC] dark:bg-[#1E2815] text-[#486328] dark:text-[#A7CE78] border-[#CFDDAB] dark:border-[#354824]",
     inactive:
-      "bg-[#F2EFE8] dark:bg-[#23221E] text-[#8F8A80] dark:text-[#7A756B] border-[#DED9CE] dark:border-[#33312C]",
+      "bg-[#EFE9CF] dark:bg-[#24261E] text-[#6B7354] dark:text-[#9E987E] border-[#DDD2A8] dark:border-[#373A2C]",
     running:
-      "bg-[#FBF5EB] dark:bg-[#332512] text-[#8C5E1B] dark:text-[#FFB74D] border-[#ECD8B3] dark:border-[#523B1E]",
+      "bg-[#F4EED8] dark:bg-[#2A2415] text-[#7C6321] dark:text-[#E2BD68] border-[#DFD3A7] dark:border-[#4B3E21]",
   };
 
   const style = variants[variant] || variants.default;

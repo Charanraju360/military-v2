@@ -1,53 +1,52 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-warm-bg: #F7F5F0;
-  --color-warm-surface: #FFFFFF;
-  --color-warm-ivory: #FCFBF9;
-  --color-warm-subtle: #F0EDE6;
-  --color-warm-muted: #E8E4DC;
-  
-  --color-warm-border: #E6E2DA;
-  --color-warm-border-strong: #D5D0C5;
+  /* Approved Matcha Cream System */
+  --color-matcha: #9CA764;
+  --color-matcha-hover: #8B9654;
+  --color-matcha-active: #7A8546;
+  --color-matcha-light: #EBF0D8;
+  --color-matcha-border: #8C9755;
+  --color-matcha-text: #191F0E;
 
-  --color-warm-text: #25231F;
-  --color-warm-secondary: #706D66;
-  --color-warm-muted-text: #8F8A80;
+  /* Approved Milky Honey System */
+  --color-honey: #F1E8C7;
+  --color-honey-surface: #FAF6E9;
+  --color-honey-elevated: #FCF9EF;
+  --color-honey-subtle: #F4ECCF;
+  --color-honey-border: #DDD2A8;
+  --color-honey-border-strong: #CBBF91;
+  --color-honey-text: #242918;
+  --color-honey-muted: #6B7354;
 
-  --color-terracotta: #C96A4A;
-  --color-terracotta-hover: #B85C3E;
-  --color-terracotta-subtle: #FBF1ED;
-  --color-terracotta-border: #ECCDC1;
-
-  --color-olive: #4A6B4E;
-  --color-olive-subtle: #F0F5F1;
-  --color-olive-border: #CFDFC8;
-
-  --color-amber-muted: #926322;
-  --color-amber-subtle: #FBF5EB;
-  --color-amber-border: #ECD8B3;
-
-  --color-brick: #9B3838;
-  --color-brick-subtle: #FDF2F2;
-  --color-brick-border: #EFC7C7;
+  /* Dark Olive-Charcoal Derivatives */
+  --color-dark-bg: #161912;
+  --color-dark-header: #1C2117;
+  --color-dark-surface: #1F241A;
+  --color-dark-elevated: #252B1F;
+  --color-dark-subtle: #262C20;
+  --color-dark-border: #343B2A;
+  --color-dark-border-strong: #454E38;
 }
 
 :root {
   font-family: var(--font-sans);
-  color: #25231F;
-  background-color: #F7F5F0;
+  color: #242918;
+  background-color: #F1E8C7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
-  background-color: #F7F5F0;
-  color: #25231F;
+  background-color: #F1E8C7;
+  color: #242918;
   min-height: 100vh;
 }
 
@@ -57,23 +56,23 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F2EFE8;
+  background: #EFE6C4;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D8D2C6;
+  background: #D6CA9E;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #BDB6A8;
+  background: #B5A97D;
 }
 
-/* Subtle focus ring */
+/* Subtle focus ring in Matcha Cream */
 *:focus-visible {
-  outline: 2px solid #C96A4A;
+  outline: 2px solid #9CA764;
   outline-offset: 1px;
 }
 
-/* Editorial line clamp */
+/* Editorial line clamps */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -88,190 +87,287 @@ body {
   overflow: hidden;
 }
 
+.line-clamp-5 {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* -------------------------------------------------------------
-   Dark Mode Eye-Strain Relief Styles
+   LIGHT MODE: Matcha Cream (#9CA764) + Milky Honey (#F1E8C7)
+   ------------------------------------------------------------- */
+header {
+  background-color: #FAF6E9 !important;
+  border-color: #DDD2A8 !important;
+}
+
+.bg-\[\#F7F5F0\] {
+  background-color: #F1E8C7 !important;
+}
+
+.bg-\[\#FFFFFF\] {
+  background-color: #FAF6E9 !important;
+}
+
+.bg-\[\#FCFBF9\] {
+  background-color: #FCF9EF !important;
+}
+
+.bg-\[\#F9F7F2\] {
+  background-color: #F5ECCF !important;
+}
+
+.bg-\[\#F0EDE6\] {
+  background-color: #F4ECCF !important;
+}
+
+.bg-\[\#F2EFE8\] {
+  background-color: #EFE6C4 !important;
+}
+
+.bg-\[\#F5F2ED\] {
+  background-color: #EFE6C4 !important;
+}
+
+.bg-\[\#ECE7DF\] {
+  background-color: #E8DEB8 !important;
+}
+
+.bg-\[\#EFECE5\] {
+  background-color: #EBE2BD !important;
+}
+
+/* Matcha Cream Primary Button & Badges */
+.bg-\[\#C96A4A\] {
+  background-color: #9CA764 !important;
+  color: #191F0E !important;
+}
+
+.hover\:bg-\[\#B85C3E\]:hover {
+  background-color: #8B9654 !important;
+}
+
+.border-\[\#BA5F40\] {
+  border-color: #8C9755 !important;
+}
+
+/* Light Borders mapped to Milky Honey tonal border */
+.border-\[\#E6E2DA\],
+.border-\[\#DEDAD2\],
+.border-\[\#EBE7DF\],
+.border-\[\#F0EDE6\],
+.border-\[\#E8E4DC\],
+.border-\[\#D5CFC3\],
+.border-\[\#E2DDD3\],
+.border-\[\#DDD7CD\],
+.border-\[\#E0D9CD\],
+.border-\[\#F0ECE4\],
+.border-\[\#D8D2C6\] {
+  border-color: #DDD2A8 !important;
+}
+
+/* Text Colors mapped to Warm Olive-Charcoal typography */
+.text-\[\#25231F\] {
+  color: #242918 !important;
+}
+
+.text-\[\#302E2A\] {
+  color: #3D442C !important;
+}
+
+.text-\[\#47423B\] {
+  color: #474F33 !important;
+}
+
+.text-\[\#706D66\] {
+  color: #5C6448 !important;
+}
+
+.text-\[\#858078\] {
+  color: #737C5A !important;
+}
+
+.text-\[\#8F8A80\] {
+  color: #7F8863 !important;
+}
+
+.text-\[\#5C574F\] {
+  color: #4F5739 !important;
+}
+
+.text-\[\#C96A4A\] {
+  color: #7A8747 !important;
+}
+
+.hover\:text-\[\#B85C3E\]:hover {
+  color: #68753A !important;
+}
+
+.hover\:bg-\[\#F7F5F0\]:hover,
+.hover\:bg-\[\#F2EFE8\]:hover,
+.hover\:bg-\[\#FCFBF9\]:hover,
+.hover\:bg-\[\#F4F1EA\]:hover,
+.hover\:bg-\[\#ECE8DF\]:hover {
+  background-color: #F4ECCF !important;
+}
+
+.hover\:border-\[\#D0C9BC\]:hover {
+  border-color: #9CA764 !important;
+}
+
+input, select, textarea {
+  background-color: #FCF9EF !important;
+  color: #242918 !important;
+  border-color: #DDD2A8 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #7F8863 !important;
+}
+
+/* -------------------------------------------------------------
+   DARK MODE: Deep Warm Olive-Charcoal + Milky Honey Highlights
    ------------------------------------------------------------- */
 .dark {
   color-scheme: dark;
 }
 
 .dark body {
-  background-color: #141311 !important;
-  color: #EDE8DF !important;
+  background-color: #161912 !important;
+  color: #F1E8C7 !important;
 }
 
 .dark header {
-  background-color: #1A1916 !important;
-  border-color: #2A2824 !important;
+  background-color: #1C2117 !important;
+  border-color: #343B2A !important;
 }
 
 .dark .bg-\[\#F7F5F0\] {
-  background-color: #141311 !important;
+  background-color: #161912 !important;
 }
 
 .dark .bg-\[\#FFFFFF\] {
-  background-color: #1C1B18 !important;
+  background-color: #1F241A !important;
 }
 
 .dark .bg-\[\#FCFBF9\] {
-  background-color: #23221E !important;
+  background-color: #252B1F !important;
 }
 
 .dark .bg-\[\#F9F7F2\] {
-  background-color: #181714 !important;
+  background-color: #191E15 !important;
 }
 
 .dark .bg-\[\#F0EDE6\] {
-  background-color: #282622 !important;
+  background-color: #262C20 !important;
 }
 
 .dark .bg-\[\#F2EFE8\] {
-  background-color: #23221E !important;
+  background-color: #252B1F !important;
 }
 
 .dark .bg-\[\#F5F2ED\] {
-  background-color: #252420 !important;
+  background-color: #282F22 !important;
 }
 
 .dark .bg-\[\#ECE7DF\] {
-  background-color: #2D2B26 !important;
+  background-color: #2C3324 !important;
 }
 
 .dark .bg-\[\#EFECE5\] {
-  background-color: #252420 !important;
+  background-color: #262C20 !important;
 }
 
-.dark .border-\[\#E6E2DA\] {
-  border-color: #2C2A25 !important;
+.dark .bg-\[\#C96A4A\] {
+  background-color: #9CA764 !important;
+  color: #12160A !important;
 }
 
-.dark .border-\[\#DEDAD2\] {
-  border-color: #312F29 !important;
+.dark .hover\:bg-\[\#B85C3E\]:hover {
+  background-color: #A8B372 !important;
 }
 
-.dark .border-\[\#EBE7DF\] {
-  border-color: #292823 !important;
-}
-
-.dark .border-\[\#F0EDE6\] {
-  border-color: #262520 !important;
-}
-
-.dark .border-\[\#E8E4DC\] {
-  border-color: #2C2A25 !important;
-}
-
-.dark .border-\[\#D5CFC3\] {
-  border-color: #393630 !important;
-}
-
-.dark .border-\[\#E2DDD3\] {
-  border-color: #2C2A25 !important;
-}
-
-.dark .border-\[\#DDD7CD\] {
-  border-color: #2C2A25 !important;
-}
-
-.dark .border-\[\#E0D9CD\] {
-  border-color: #312F29 !important;
+.dark .border-\[\#E6E2DA\],
+.dark .border-\[\#DEDAD2\],
+.dark .border-\[\#EBE7DF\],
+.dark .border-\[\#F0EDE6\],
+.dark .border-\[\#E8E4DC\],
+.dark .border-\[\#D5CFC3\],
+.dark .border-\[\#E2DDD3\],
+.dark .border-\[\#DDD7CD\],
+.dark .border-\[\#E0D9CD\],
+.dark .border-\[\#F0ECE4\],
+.dark .border-\[\#D8D2C6\] {
+  border-color: #343B2A !important;
 }
 
 .dark .text-\[\#25231F\] {
-  color: #EDE8DF !important;
+  color: #F1E8C7 !important;
 }
 
 .dark .text-\[\#302E2A\] {
-  color: #D6D0C5 !important;
+  color: #D8CFB0 !important;
 }
 
 .dark .text-\[\#47423B\] {
-  color: #BDB7AB !important;
+  color: #C6BEA0 !important;
 }
 
 .dark .text-\[\#706D66\] {
-  color: #9C968A !important;
+  color: #A39B7C !important;
 }
 
 .dark .text-\[\#858078\] {
-  color: #8C867B !important;
+  color: #857F65 !important;
 }
 
 .dark .text-\[\#8F8A80\] {
-  color: #7B766D !important;
+  color: #7C765E !important;
 }
 
 .dark .text-\[\#5C574F\] {
-  color: #B5AFA4 !important;
+  color: #B5AE95 !important;
 }
 
-.dark .hover\:bg-\[\#F7F5F0\]:hover {
-  background-color: #252420 !important;
+.dark .text-\[\#C96A4A\] {
+  color: #9CA764 !important;
 }
 
-.dark .hover\:bg-\[\#F2EFE8\]:hover {
-  background-color: #252420 !important;
+.dark .hover\:text-\[\#B85C3E\]:hover {
+  color: #B2BE7E !important;
 }
 
-.dark .hover\:bg-\[\#FCFBF9\]:hover {
-  background-color: #252420 !important;
+.dark .hover\:bg-\[\#F7F5F0\]:hover,
+.dark .hover\:bg-\[\#F2EFE8\]:hover,
+.dark .hover\:bg-\[\#FCFBF9\]:hover,
+.dark .hover\:bg-\[\#F4F1EA\]:hover,
+.dark .hover\:bg-\[\#ECE8DF\]:hover {
+  background-color: #293121 !important;
 }
 
 .dark .hover\:border-\[\#D0C9BC\]:hover {
-  border-color: #4A463E !important;
+  border-color: #4F5940 !important;
 }
 
 .dark input, .dark select, .dark textarea {
-  background-color: #1A1916 !important;
-  color: #EDE8DF !important;
-  border-color: #33312C !important;
-}
-
-.dark .bg-\[\#FBF1ED\] {
-  background-color: #341F18 !important;
-}
-
-.dark .border-\[\#ECCDC1\] {
-  border-color: #D97757 !important;
-}
-
-.dark .bg-\[\#FDF2F2\] {
-  background-color: #2E1818 !important;
-}
-
-.dark .border-\[\#EFC7C7\] {
-  border-color: #522525 !important;
-}
-
-.dark .bg-\[\#F0F5F1\] {
-  background-color: #19271C !important;
-}
-
-.dark .border-\[\#CFDFC8\] {
-  border-color: #2D4732 !important;
-}
-
-.dark .bg-\[\#FBF5EB\] {
-  background-color: #2E2214 !important;
-}
-
-.dark .border-\[\#ECD8B3\] {
-  border-color: #543E20 !important;
+  background-color: #191E15 !important;
+  color: #F1E8C7 !important;
+  border-color: #38412F !important;
 }
 
 .dark input::placeholder, .dark textarea::placeholder {
-  color: #6E695F !important;
+  color: #7C765E !important;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #141311;
+  background: #161912;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #2E2C27;
+  background: #2C3323;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #423F39;
+  background: #3F4932;
 }
-

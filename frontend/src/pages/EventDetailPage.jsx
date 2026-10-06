@@ -14,7 +14,6 @@ import {
   ConflictIcon,
   ExternalLinkIcon,
   LocationIcon,
-  MapIcon,
   ShieldIcon,
   SourcesIcon,
 } from "../components/ui/Icons";
@@ -75,7 +74,7 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] flex flex-col font-sans transition-colors">
       <Navbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-7">
@@ -84,25 +83,25 @@ export default function EventDetailPage() {
           <button
             type="button"
             onClick={() => navigate("/events")}
-            className="inline-flex items-center space-x-1.5 text-xs font-medium text-[#706D66] hover:text-[#25231F] transition-colors"
+            className="inline-flex items-center space-x-1.5 text-xs font-medium text-[#5C6448] dark:text-[#A39B7C] hover:text-[#242918] dark:hover:text-[#F1E8C7] transition-colors"
           >
             <ChevronLeftIcon size={12} />
             <span>Return to Event Feed</span>
           </button>
 
-          <span className="text-[11px] font-mono text-[#858078]">
+          <span className="text-[11px] font-mono text-[#6B7354] dark:text-[#9A947A]">
             EVENT ID: {eventId}
           </span>
         </div>
 
         {loading ? (
-          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-8 animate-pulse space-y-4">
-            <div className="h-5 bg-[#F0EDE6] rounded w-1/4"></div>
-            <div className="h-8 bg-[#F0EDE6] rounded w-3/4"></div>
-            <div className="h-24 bg-[#F0EDE6] rounded w-full"></div>
+          <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-8 animate-pulse space-y-4">
+            <div className="h-5 bg-[#F4ECCF] dark:bg-[#262C20] rounded w-1/4"></div>
+            <div className="h-8 bg-[#F4ECCF] dark:bg-[#262C20] rounded w-3/4"></div>
+            <div className="h-24 bg-[#F4ECCF] dark:bg-[#262C20] rounded w-full"></div>
           </div>
         ) : error ? (
-          <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-6 text-[#9B3838] space-y-2">
+          <div className="bg-[#F7EBE8] dark:bg-[#2B1B19] border border-[#E8C7C1] dark:border-[#4E2B27] rounded-md p-6 text-[#8C3A35] dark:text-[#E58079] space-y-2">
             <h3 className="font-serif font-medium text-base">
               Unable to load intelligence report
             </h3>
@@ -117,14 +116,14 @@ export default function EventDetailPage() {
             </Button>
           </div>
         ) : !event ? (
-          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-8 text-center text-[#706D66]">
+          <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-8 text-center text-[#6B7354] dark:text-[#9A947A]">
             Intelligence event record not found.
           </div>
         ) : (
           <article className="space-y-7">
             {/* Header Document Section */}
-            <header className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 sm:p-7 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F0EDE6] pb-3">
+            <header className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 sm:p-7 shadow-[0_1px_2px_rgba(36,41,24,0.03)] space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DDD2A8] dark:border-[#343B2A] pb-3">
                 <div className="flex items-center space-x-2">
                   <Badge variant={event.category || "OTHER_MILITARY"}>
                     {event.category || "OTHER_MILITARY"}
@@ -151,15 +150,15 @@ export default function EventDetailPage() {
               </div>
 
               <div className="space-y-1.5">
-                <div className="text-[11px] font-mono uppercase text-[#706D66]">
+                <div className="text-[11px] font-mono uppercase text-[#6B7354] dark:text-[#9A947A]">
                   Intelligence Brief / Multi-Source Collective Synthesis
                 </div>
-                <h1 className="text-xl sm:text-2xl font-serif font-medium text-[#25231F] leading-snug">
+                <h1 className="text-xl sm:text-2xl font-serif font-medium text-[#242918] dark:text-[#F1E8C7] leading-snug">
                   {event.summary && event.summary.length > 100
                     ? event.summary.slice(0, 100).replace(/\s+[^\s]*$/, "") + "..."
                     : event.summary || `Intelligence Event #${event.id.slice(-6)}`}
                 </h1>
-                <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#858078] pt-1">
+                <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#6B7354] dark:text-[#9A947A] pt-1">
                   <span>
                     Reported Window: {formatDate(event.first_article_at || event.latest_article_at)}
                     {event.latest_article_at !== event.first_article_at &&
@@ -174,12 +173,12 @@ export default function EventDetailPage() {
             </header>
 
             {/* Executive Summary Section */}
-            <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[#706D66]">
+            <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-[0_1px_2px_rgba(36,41,24,0.02)] space-y-3">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[#6B7354] dark:text-[#9A947A]">
                 Executive Summary
               </h2>
-              <div className="bg-[#FCFBF9] border border-[#EBE7DF] rounded p-4 sm:p-5">
-                <p className="text-sm sm:text-base text-[#25231F] dark:text-[#E8E4DD] font-serif leading-relaxed whitespace-pre-line">
+              <div className="bg-[#FCF9EF] dark:bg-[#191E15] border border-[#DDD2A8] dark:border-[#38412F] rounded p-4 sm:p-5">
+                <p className="text-sm sm:text-base text-[#242918] dark:text-[#F1E8C7] font-serif leading-relaxed whitespace-pre-line">
                   {event.summary || "No collective summary available."}
                 </p>
               </div>
@@ -187,21 +186,21 @@ export default function EventDetailPage() {
 
             {/* Extracted Key Claims & Evidence Section */}
             {event.claims && event.claims.length > 0 && (
-              <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3">
-                <h2 className="text-xs font-mono uppercase tracking-wider text-[#706D66]">
+              <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-[0_1px_2px_rgba(36,41,24,0.02)] space-y-3">
+                <h2 className="text-xs font-mono uppercase tracking-wider text-[#6B7354] dark:text-[#9A947A]">
                   Key Claims & Evidence Trail
                 </h2>
                 <div className="space-y-2">
                   {event.claims.map((claim, idx) => (
                     <div
                       key={idx}
-                      className="p-3 bg-[#FCFBF9] border border-[#EBE7DF] rounded text-xs space-y-1"
+                      className="p-3 bg-[#FCF9EF] dark:bg-[#191E15] border border-[#DDD2A8] dark:border-[#38412F] rounded text-xs space-y-1"
                     >
-                      <p className="text-[#302E2A] font-medium leading-relaxed">
+                      <p className="text-[#3D442C] dark:text-[#D8CFB0] font-medium leading-relaxed">
                         • {claim.text || claim}
                       </p>
                       {claim.article_ids && claim.article_ids.length > 0 && (
-                        <p className="text-[11px] font-mono text-[#858078]">
+                        <p className="text-[11px] font-mono text-[#6B7354] dark:text-[#9A947A]">
                           Attributed to {claim.article_ids.length} member report(s)
                         </p>
                       )}
@@ -212,45 +211,45 @@ export default function EventDetailPage() {
             )}
 
             {/* Event Timeline */}
-            <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F0EDE6]">
-                <h2 className="text-xs font-mono uppercase tracking-wider text-[#706D66]">
+            <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-[0_1px_2px_rgba(36,41,24,0.02)] space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#DDD2A8] dark:border-[#343B2A]">
+                <h2 className="text-xs font-mono uppercase tracking-wider text-[#6B7354] dark:text-[#9A947A]">
                   Chronological Event Timeline
                 </h2>
-                <span className="text-[11px] font-mono text-[#858078]">
+                <span className="text-[11px] font-mono text-[#6B7354] dark:text-[#9A947A]">
                   Ordered by incident report time
                 </span>
               </div>
 
               {event.timeline && event.timeline.length > 0 ? (
-                <div className="relative border-l border-[#DEDAD2] ml-3 pl-4 space-y-4 py-1">
+                <div className="relative border-l border-[#DDD2A8] dark:border-[#38412F] ml-3 pl-4 space-y-4 py-1">
                   {event.timeline.map((item, idx) => (
                     <div key={idx} className="relative space-y-1">
-                      <div className="absolute -left-[21px] top-1 w-2 h-2 rounded-full bg-[#C96A4A] border-2 border-[#FFFFFF]" />
-                      <div className="text-[11px] font-mono text-[#858078]">
-                        {formatDate(item.date || item.timestamp)}
+                      <div className="absolute -left-[21px] top-1 w-2 h-2 rounded-full bg-[#9CA764] border-2 border-[#FAF6E9] dark:border-[#1F241A]" />
+                      <div className="text-[11px] font-mono text-[#6B7354] dark:text-[#9A947A]">
+                        {formatDate(item.date || item.timestamp || item.time)}
                       </div>
-                      <p className="text-xs sm:text-sm text-[#302E2A] leading-relaxed">
+                      <p className="text-xs sm:text-sm text-[#3D442C] dark:text-[#D8CFB0] leading-relaxed">
                         {item.description || item.text}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-xs text-[#706D66] py-2">
+                <div className="text-xs text-[#5C6448] dark:text-[#A39B7C] py-2">
                   No chronological breakdown recorded for this event. Reporting timeframe spans {formatDate(event.first_article_at || event.latest_article_at)}.
                 </div>
               )}
             </section>
 
-            {/* Cross-Source Conflict & Discrepancy Detection (only shown when conflicts exist) */}
+            {/* Cross-Source Conflict & Discrepancy Detection */}
             {event.conflicts && event.conflicts.length > 0 && (
-              <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-[#F0EDE6]">
-                  <h2 className="text-xs font-mono uppercase tracking-wider text-[#706D66]">
+              <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-[0_1px_2px_rgba(36,41,24,0.02)] space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-[#DDD2A8] dark:border-[#343B2A]">
+                  <h2 className="text-xs font-mono uppercase tracking-wider text-[#6B7354] dark:text-[#9A947A]">
                     Cross-Source Analysis & Conflict Evaluation
                   </h2>
-                  <span className="text-[11px] font-mono text-[#858078]">
+                  <span className="text-[11px] font-mono text-[#6B7354] dark:text-[#9A947A]">
                     Comparative verification
                   </span>
                 </div>
@@ -259,17 +258,17 @@ export default function EventDetailPage() {
                   {event.conflicts.map((conf, idx) => (
                     <div
                       key={idx}
-                      className="p-4 bg-[#FBF5EB] dark:bg-[#2C2114] border border-[#ECD8B3] dark:border-[#4E391F] rounded-md space-y-2 text-xs"
+                      className="p-4 bg-[#F4EED8] dark:bg-[#2A2415] border border-[#DFD3A7] dark:border-[#4B3E21] rounded-md space-y-2 text-xs"
                     >
-                      <div className="flex items-center space-x-1.5 font-semibold text-[#8C5E1B] dark:text-[#FFB74D]">
+                      <div className="flex items-center space-x-1.5 font-semibold text-[#7C6321] dark:text-[#E2BD68]">
                         <ConflictIcon size={14} />
                         <span>Source Discrepancy Identified</span>
                       </div>
-                      <p className="text-[#3E3320] dark:text-[#E0D5C3] leading-relaxed">
+                      <p className="text-[#3D442C] dark:text-[#D8CFB0] leading-relaxed">
                         {conf.text || conf.description || JSON.stringify(conf)}
                       </p>
                       {conf.status && (
-                        <span className="inline-block font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-[#FFFFFF] dark:bg-[#1E1D1A] border border-[#D9C49D] dark:border-[#4E391F] text-[#8C5E1B] dark:text-[#FFB74D]">
+                        <span className="inline-block font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#38412F] text-[#7C6321] dark:text-[#E2BD68]">
                           Status: {conf.status}
                         </span>
                       )}
@@ -281,17 +280,17 @@ export default function EventDetailPage() {
 
             {/* Extracted Entities Dossier */}
             {event.entities && event.entities.length > 0 && (
-              <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3">
-                <h2 className="text-xs font-mono uppercase tracking-wider text-[#706D66]">
+              <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-[0_1px_2px_rgba(36,41,24,0.02)] space-y-3">
+                <h2 className="text-xs font-mono uppercase tracking-wider text-[#6B7354] dark:text-[#9A947A]">
                   Extracted Military & Political Entities ({event.entities.length})
                 </h2>
                 <div className="flex flex-wrap gap-1.5">
                   {event.entities.map((ent, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center px-2.5 py-1 rounded text-xs bg-[#FCFBF9] border border-[#E2DDD3] text-[#302E2A]"
+                      className="inline-flex items-center px-2.5 py-1 rounded text-xs bg-[#FCF9EF] dark:bg-[#191E15] border border-[#DDD2A8] dark:border-[#38412F] text-[#242918] dark:text-[#F1E8C7]"
                     >
-                      <span className="text-[#858078] mr-1.5 font-mono text-[10px] uppercase">
+                      <span className="text-[#6B7354] dark:text-[#9A947A] mr-1.5 font-mono text-[10px] uppercase">
                         {ent.type}
                       </span>
                       <span className="font-medium">{ent.text}</span>
@@ -302,39 +301,39 @@ export default function EventDetailPage() {
             )}
 
             {/* Member Articles Attribution Dossier */}
-            <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F0EDE6]">
-                <h2 className="text-xs font-mono uppercase tracking-wider text-[#706D66]">
+            <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-[0_1px_2px_rgba(36,41,24,0.02)] space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#DDD2A8] dark:border-[#343B2A]">
+                <h2 className="text-xs font-mono uppercase tracking-wider text-[#6B7354] dark:text-[#9A947A]">
                   Member Ingested Articles ({event.articles?.length || 0})
                 </h2>
-                <span className="text-[11px] font-mono text-[#858078]">
+                <span className="text-[11px] font-mono text-[#6B7354] dark:text-[#9A947A]">
                   Verified sources
                 </span>
               </div>
 
               <Table>
                 <thead>
-                  <tr className="border-b border-[#E6E2DA] bg-[#F7F5F0] text-[#706D66] font-mono text-[11px] uppercase">
+                  <tr className="border-b border-[#DDD2A8] dark:border-[#343B2A] bg-[#F4ECCF] dark:bg-[#262C20] text-[#5C6448] dark:text-[#A39B7C] font-mono text-[11px] uppercase">
                     <th className="p-3">Report Title</th>
                     <th className="p-3">Source Provider</th>
                     <th className="p-3">Publication Date</th>
                     <th className="p-3 text-right">External Link</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F0EDE6]">
+                <tbody className="divide-y divide-[#DDD2A8] dark:divide-[#343B2A]">
                   {event.articles && event.articles.length > 0 ? (
                     event.articles.map((art) => (
                       <tr
                         key={art.id}
-                        className="hover:bg-[#FCFBF9] transition-colors"
+                        className="hover:bg-[#FCF9EF] dark:hover:bg-[#252B1F] transition-colors"
                       >
-                        <td className="p-3 font-medium text-[#25231F] max-w-sm">
+                        <td className="p-3 font-medium text-[#242918] dark:text-[#F1E8C7] max-w-sm">
                           {art.title}
                         </td>
-                        <td className="p-3 text-[#706D66] font-mono text-xs">
+                        <td className="p-3 text-[#5C6448] dark:text-[#A39B7C] font-mono text-xs">
                           {art.source || "OSINT Feed"}
                         </td>
-                        <td className="p-3 text-[#706D66] font-mono text-xs">
+                        <td className="p-3 text-[#5C6448] dark:text-[#A39B7C] font-mono text-xs">
                           {formatDate(art.published_at)}
                         </td>
                         <td className="p-3 text-right">
@@ -342,7 +341,7 @@ export default function EventDetailPage() {
                             href={art.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-1 text-xs font-medium text-[#C96A4A] hover:text-[#B85C3E]"
+                            className="inline-flex items-center space-x-1 text-xs font-medium text-[#7A8747] dark:text-[#9CA764] hover:text-[#68753A] dark:hover:text-[#B2BE7E] transition-colors"
                           >
                             <span>Inspect</span>
                             <ExternalLinkIcon size={12} />
@@ -352,7 +351,7 @@ export default function EventDetailPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="p-4 text-center text-[#858078] text-xs">
+                      <td colSpan={4} className="p-4 text-center text-[#6B7354] dark:text-[#9A947A] text-xs">
                         No articles attached to this event record.
                       </td>
                     </tr>

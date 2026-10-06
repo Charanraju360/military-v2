@@ -4,7 +4,6 @@ import AssistantPage from "./pages/AssistantPage";
 import EntitiesPage from "./pages/EntitiesPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import EventFeedPage from "./pages/EventFeedPage";
-import MapPage from "./pages/MapPage";
 import OverviewPage from "./pages/OverviewPage";
 import PipelinePage from "./pages/PipelinePage";
 import SearchPage from "./pages/SearchPage";
@@ -14,7 +13,6 @@ const routes = [
   { matches: (path) => path === "/", Page: OverviewPage },
   { matches: (path) => path === "/events", Page: EventFeedPage },
   { matches: (path) => path.startsWith("/events/"), Page: EventDetailPage },
-  { matches: (path) => path === "/map", Page: MapPage },
   { matches: (path) => path === "/analysis", Page: AnalysisPage },
   { matches: (path) => path === "/entities", Page: EntitiesPage },
   { matches: (path) => path === "/search", Page: SearchPage },

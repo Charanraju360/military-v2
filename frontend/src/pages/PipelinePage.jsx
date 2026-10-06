@@ -107,20 +107,20 @@ export default function PipelinePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] flex flex-col font-sans transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-7">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4 pb-4 border-b border-[#E6E2DA]">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4 pb-4 border-b border-[#DDD2A8] dark:border-[#343B2A]">
           <div>
-            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+            <div className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] tracking-wider">
               Operational Diagnostics / Ingestion Pipeline
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#191F0E] dark:text-[#F1E8C7] mt-1">
               Pipeline Control & Telemetry
             </h1>
-            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+            <p className="text-xs sm:text-sm text-[#555C3E] dark:text-[#CBD1B4] mt-1">
               Manual pipeline trigger, database state management, and real-time execution telemetry across all processing stages.
             </p>
           </div>
@@ -132,7 +132,7 @@ export default function PipelinePage() {
               disabled={isRunning || actionLoading}
               onClick={() => setShowCleanConfirm(true)}
             >
-              <TrashIcon size={12} className="text-[#9B3838]" />
+              <TrashIcon size={12} className="text-[#8C3A3A] dark:text-[#E07A7A]" />
               <span>Clean Database</span>
             </Button>
             <Button
@@ -148,28 +148,28 @@ export default function PipelinePage() {
         </div>
 
         {error && (
-          <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-4 text-xs text-[#9B3838] space-y-1">
+          <div className="bg-[#FBEAE8] dark:bg-[#2A1E1E] border border-[#E8B4B4] dark:border-[#522525] rounded-md p-4 text-xs text-[#8C3A3A] dark:text-[#E07A7A] space-y-1">
             <span className="font-semibold">Operational Error:</span> {error}
           </div>
         )}
 
         {/* Live Status Section */}
-        <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F0EDE6] pb-3">
+        <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-sm space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DDD2A8] dark:border-[#343B2A] pb-3">
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-mono uppercase text-[#706D66]">
+              <span className="text-xs font-mono uppercase text-[#6A734D] dark:text-[#B5BC94]">
                 Telemetry Monitor
               </span>
               <span>·</span>
-              <span className="text-sm font-semibold text-[#25231F]">
+              <span className="text-sm font-semibold text-[#191F0E] dark:text-[#F1E8C7]">
                 {isRunning ? (
-                  <span className="text-[#C96A4A] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#C96A4A] animate-pulse" />
+                  <span className="text-[#4F6830] dark:text-[#9CA764] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#9CA764] animate-pulse" />
                     Executing Run ({status?.current_phase || "initializing"} stage)
                   </span>
                 ) : (
-                  <span className="text-[#4A6B4E] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#4A6B4E]" />
+                  <span className="text-[#4F6830] dark:text-[#9CA764] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#4F6830] dark:bg-[#9CA764]" />
                     Pipeline Idle / Ready for Execution
                   </span>
                 )}
@@ -177,7 +177,7 @@ export default function PipelinePage() {
             </div>
 
             {status?.current_run_id && (
-              <span className="text-[11px] font-mono text-[#858078]">
+              <span className="text-[11px] font-mono text-[#6A734D] dark:text-[#B5BC94]">
                 ACTIVE RUN ID: {status.current_run_id}
               </span>
             )}
@@ -201,48 +201,44 @@ export default function PipelinePage() {
                   key={phase.id}
                   className={`rounded border p-3 text-xs space-y-2 transition-all ${
                     isCurrent
-                      ? "bg-[#FBF1ED] dark:bg-[#341F18] border-[#ECCDC1] dark:border-[#D97757] ring-1 ring-[#C96A4A]/40 dark:ring-[#D97757]/60"
+                      ? "bg-[#F4EED9] dark:bg-[#252B1F] border-[#9CA764] dark:border-[#9CA764] ring-1 ring-[#9CA764]/50"
                       : isFailed
-                      ? "bg-[#FDF2F2] dark:bg-[#2E1818] border-[#EFC7C7] dark:border-[#522525]"
+                      ? "bg-[#FBEAE8] dark:bg-[#2E1818] border-[#E8B4B4] dark:border-[#522525]"
                       : isDone
-                      ? "bg-[#FCFBF9] dark:bg-[#1E241E] border-[#DEDAD2] dark:border-[#2A3E2C]"
-                      : "bg-[#F7F5F0] dark:bg-[#1C1B18] border-[#E8E4DC] dark:border-[#2C2A25] opacity-70"
+                      ? "bg-[#FCF9EF] dark:bg-[#1E241A] border-[#DDD2A8] dark:border-[#343B2A]"
+                      : "bg-[#F1E8C7] dark:bg-[#161912] border-[#DDD2A8] dark:border-[#2C2A25] opacity-75"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase font-semibold text-[#706D66] dark:text-[#A8A297]">
+                    <span className="font-mono text-[10px] uppercase font-semibold text-[#6A734D] dark:text-[#B5BC94]">
                       {phase.id}
                     </span>
                     {isCurrent ? (
-                      <span className="text-[10px] font-mono text-[#C96A4A] dark:text-[#FF8A65] font-semibold animate-pulse">
+                      <span className="text-[10px] font-mono text-[#4F6830] dark:text-[#9CA764] font-semibold animate-pulse">
                         RUNNING
                       </span>
                     ) : isDone ? (
-                      <span className="text-[10px] font-mono text-[#4A6B4E] dark:text-[#81C784] font-semibold">
+                      <span className="text-[10px] font-mono text-[#4F6830] dark:text-[#9CA764] font-semibold">
                         DONE
                       </span>
                     ) : isFailed ? (
-                      <span className="text-[10px] font-mono text-[#9B3838] dark:text-[#E57373] font-semibold">
+                      <span className="text-[10px] font-mono text-[#8C3A3A] dark:text-[#E07A7A] font-semibold">
                         FAILED
                       </span>
                     ) : (
-                      <span className="text-[10px] font-mono text-[#8F8A80] dark:text-[#7A756B]">
+                      <span className="text-[10px] font-mono text-[#8C887B] dark:text-[#7A7E6C]">
                         PENDING
                       </span>
                     )}
                   </div>
 
-                  <p className={`text-[11px] font-medium leading-tight ${
-                    isCurrent
-                      ? "text-[#25231F] dark:text-[#FFEBE0]"
-                      : "text-[#25231F] dark:text-[#EDE8DF]"
-                  }`}>
+                  <p className="text-[11px] font-medium leading-tight text-[#191F0E] dark:text-[#F1E8C7]">
                     {phase.desc}
                   </p>
 
                   {/* Phase Metrics */}
                   {phaseData && (
-                    <div className="pt-1.5 border-t border-[#E8E4DC] font-mono text-[10px] text-[#5C574F] space-y-0.5">
+                    <div className="pt-1.5 border-t border-[#DDD2A8] dark:border-[#343B2A] font-mono text-[10px] text-[#555C3E] dark:text-[#CBD1B4] space-y-0.5">
                       {phase.id === "clean_db" && <p>Wiped stores</p>}
                       {phase.id === "collect" && (
                         <p>+{phaseData.new || 0} / dupe:{phaseData.skipped_dupes || 0}</p>
@@ -264,7 +260,7 @@ export default function PipelinePage() {
                       )}
 
                       {phaseData.errors && phaseData.errors.length > 0 && (
-                        <p className="text-[#9B3838] font-sans">
+                        <p className="text-[#8C3A3A] dark:text-[#E07A7A] font-sans">
                           {phaseData.errors.length} error(s)
                         </p>
                       )}
@@ -277,23 +273,23 @@ export default function PipelinePage() {
         </section>
 
         {/* Historical Pipeline Logs Section */}
-        <section className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F0EDE6]">
+        <section className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#DDD2A8] dark:border-[#343B2A]">
             <div>
-              <h2 className="text-base font-serif font-medium text-[#25231F]">
+              <h2 className="text-base font-serif font-medium text-[#191F0E] dark:text-[#F1E8C7]">
                 Historical Run Telemetry Logs
               </h2>
-              <p className="text-xs text-[#706D66]">
+              <p className="text-xs text-[#555C3E] dark:text-[#CBD1B4]">
                 Immutable execution records persisted to MongoDB pipeline_logs collection.
               </p>
             </div>
-            <span className="text-xs font-mono text-[#858078]">
+            <span className="text-xs font-mono text-[#6A734D] dark:text-[#B5BC94]">
               {logs.length} logged run(s)
             </span>
           </div>
 
           {logs.length === 0 ? (
-            <div className="text-center py-8 text-xs text-[#706D66]">
+            <div className="text-center py-8 text-xs text-[#6A734D] dark:text-[#B5BC94]">
               No previous pipeline runs recorded.
             </div>
           ) : (
@@ -305,7 +301,7 @@ export default function PipelinePage() {
                 return (
                   <div
                     key={log.run_id}
-                    className="border border-[#E6E2DA] rounded p-4 space-y-3 bg-[#FCFBF9]"
+                    className="border border-[#DDD2A8] dark:border-[#343B2A] rounded p-4 space-y-3 bg-[#FCF9EF] dark:bg-[#161912]"
                   >
                     <div
                       className="flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none"
@@ -317,32 +313,32 @@ export default function PipelinePage() {
                         <Badge variant={isSuccess ? "high_trust" : "low_trust"}>
                           {log.overall_status?.toUpperCase() || "UNKNOWN"}
                         </Badge>
-                        <span className="font-mono text-[#25231F]">
+                        <span className="font-mono text-[#191F0E] dark:text-[#F1E8C7]">
                           Run #{log.run_id.slice(-8)}
                         </span>
-                        <span className="text-[#706D66]">
+                        <span className="text-[#6A734D] dark:text-[#B5BC94]">
                           Started: {new Date(log.started_at).toLocaleString()}
                         </span>
                       </div>
 
-                      <span className="text-xs font-medium text-[#C96A4A] hover:text-[#B85C3E]">
+                      <span className="text-xs font-medium text-[#4F6830] dark:text-[#9CA764] hover:text-[#384A22] dark:hover:text-[#B5BC94]">
                         {isExpanded ? "Hide JSON Diagnostics ▲" : "View Phase Diagnostics ▼"}
                       </span>
                     </div>
 
                     {isExpanded && (
-                      <div className="pt-3 border-t border-[#EBE7DF] space-y-2">
-                        <h4 className="text-[11px] font-mono uppercase text-[#706D66]">
+                      <div className="pt-3 border-t border-[#DDD2A8] dark:border-[#343B2A] space-y-2">
+                        <h4 className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94]">
                           Phase Breakdown Trace
                         </h4>
-                        <div className="bg-[#F7F5F0] p-3 rounded border border-[#E6E2DA] font-mono text-[11px] space-y-1.5 max-h-60 overflow-y-auto">
+                        <div className="bg-[#F1E8C7] dark:bg-[#1F241A] p-3 rounded border border-[#DDD2A8] dark:border-[#343B2A] font-mono text-[11px] space-y-1.5 max-h-60 overflow-y-auto">
                           {log.phases && log.phases.length > 0 ? (
                             log.phases.map((p, idx) => (
                               <div
                                 key={idx}
-                                className="border-b border-[#E8E4DC] pb-1 text-[#302E2A]"
+                                className="border-b border-[#DDD2A8] dark:border-[#343B2A] pb-1 text-[#191F0E] dark:text-[#F1E8C7]"
                               >
-                                <span className="text-[#C96A4A] font-semibold">
+                                <span className="text-[#4F6830] dark:text-[#9CA764] font-semibold">
                                   [{p.phase}]
                                 </span>{" "}
                                 status={p.status}{" "}
@@ -350,7 +346,7 @@ export default function PipelinePage() {
                               </div>
                             ))
                           ) : (
-                            <span className="text-[#858078]">
+                            <span className="text-[#8C887B] dark:text-[#7A7E6C]">
                               No detailed phase telemetry emitted for this run.
                             </span>
                           )}
@@ -371,13 +367,13 @@ export default function PipelinePage() {
           title="Confirm Pipeline Ingestion Run"
         >
           <div className="space-y-4 pt-1">
-            <p className="text-xs text-[#47423B] leading-relaxed">
+            <p className="text-xs text-[#555C3E] dark:text-[#CBD1B4] leading-relaxed">
               Executing the pipeline wipes the database first (excluding configured intelligence sources), collects fresh articles from active feeds, applies the military topic filter, computes vector embeddings, clusters events, and generates collective summaries.
             </p>
-            <div className="p-3 bg-[#FBF5EB] border border-[#ECD8B3] rounded text-xs text-[#8C5E1B]">
-              <span className="font-semibold">Notice:</span> Existing articles, clustered events, and chat sessions will be refreshed. News source configurations remain permanently preserved.
+            <div className="p-3 bg-[#F4EED9] dark:bg-[#252B1F] border border-[#DDD2A8] dark:border-[#343B2A] rounded text-xs text-[#555C3E] dark:text-[#CBD1B4]">
+              <span className="font-semibold text-[#191F0E] dark:text-[#F1E8C7]">Notice:</span> Existing articles, clustered events, and chat sessions will be refreshed. News source configurations remain permanently preserved.
             </div>
-            <div className="flex justify-end space-x-2 pt-2 border-t border-[#F0EDE6]">
+            <div className="flex justify-end space-x-2 pt-2 border-t border-[#DDD2A8] dark:border-[#343B2A]">
               <Button
                 variant="outline"
                 size="sm"
@@ -399,13 +395,13 @@ export default function PipelinePage() {
           title="Confirm Database Wipe"
         >
           <div className="space-y-4 pt-1">
-            <p className="text-xs text-[#47423B] leading-relaxed">
+            <p className="text-xs text-[#555C3E] dark:text-[#CBD1B4] leading-relaxed">
               Cleaning the database permanently purges all ingested articles, extracted entities, clustered events, vector stores, and assistant threads. Configured intelligence sources are preserved.
             </p>
-            <div className="p-3 bg-[#FDF2F2] border border-[#EFC7C7] rounded text-xs text-[#9B3838]">
+            <div className="p-3 bg-[#FBEAE8] dark:bg-[#2A1E1E] border border-[#E8B4B4] dark:border-[#522525] rounded text-xs text-[#8C3A3A] dark:text-[#E07A7A]">
               <span className="font-semibold">Destructive Action:</span> Clustered intelligence data cannot be recovered once purged.
             </div>
-            <div className="flex justify-end space-x-2 pt-2 border-t border-[#F0EDE6]">
+            <div className="flex justify-end space-x-2 pt-2 border-t border-[#DDD2A8] dark:border-[#343B2A]">
               <Button
                 variant="outline"
                 size="sm"

@@ -38,38 +38,38 @@ export default function AnalysisPage() {
   const multiSourceEvents = events.filter((e) => (e.article_count || 1) > 1);
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] flex flex-col font-sans transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#DDD2A8] dark:border-[#343B2A]">
           <div>
-            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+            <div className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] tracking-wider">
               Analytical Intelligence / Cross-Source Verification
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#191F0E] dark:text-[#F1E8C7] mt-1">
               Cross-Source Discrepancies & Conflict Analysis
             </h1>
-            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+            <p className="text-xs sm:text-sm text-[#555C3E] dark:text-[#CBD1B4] mt-1">
               Comparative analysis of conflicting claims, disputed casualty counts, and attribution divergences across competing defense feeds.
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 text-xs font-mono text-[#858078]">
+          <div className="flex items-center space-x-2 text-xs font-mono text-[#6A734D] dark:text-[#B5BC94]">
             <span>{multiSourceEvents.length} multi-source events analyzed</span>
           </div>
         </div>
 
         {/* Tab Filters */}
-        <div className="flex items-center space-x-2 border-b border-[#E6E2DA] pb-2 text-xs">
+        <div className="flex items-center space-x-2 border-b border-[#DDD2A8] dark:border-[#343B2A] pb-2 text-xs">
           <button
             type="button"
             onClick={() => setActiveTab("all")}
             className={`px-3 py-1.5 rounded transition-colors font-medium ${
               activeTab === "all"
-                ? "bg-[#C96A4A] text-white"
-                : "text-[#706D66] hover:bg-[#F0EDE6]"
+                ? "bg-[#9CA764] text-[#191F0E] font-semibold"
+                : "text-[#6A734D] dark:text-[#B5BC94] hover:bg-[#FAF6E9] dark:hover:bg-[#1F241A]"
             }`}
           >
             All Corroborated Events ({multiSourceEvents.length})
@@ -79,8 +79,8 @@ export default function AnalysisPage() {
             onClick={() => setActiveTab("discrepancies")}
             className={`px-3 py-1.5 rounded transition-colors font-medium ${
               activeTab === "discrepancies"
-                ? "bg-[#C96A4A] text-white"
-                : "text-[#706D66] hover:bg-[#F0EDE6]"
+                ? "bg-[#9CA764] text-[#191F0E] font-semibold"
+                : "text-[#6A734D] dark:text-[#B5BC94] hover:bg-[#FAF6E9] dark:hover:bg-[#1F241A]"
             }`}
           >
             Reported Discrepancies
@@ -94,23 +94,23 @@ export default function AnalysisPage() {
               {[1, 2].map((i) => (
                 <div
                   key={i}
-                  className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 h-48 animate-pulse space-y-3"
+                  className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 h-48 animate-pulse space-y-3"
                 >
-                  <div className="h-4 bg-[#F0EDE6] rounded w-1/4"></div>
-                  <div className="h-6 bg-[#F0EDE6] rounded w-3/4"></div>
-                  <div className="h-20 bg-[#F0EDE6] rounded w-full"></div>
+                  <div className="h-4 bg-[#F1E8C7] dark:bg-[#252B1F] rounded w-1/4"></div>
+                  <div className="h-6 bg-[#F1E8C7] dark:bg-[#252B1F] rounded w-3/4"></div>
+                  <div className="h-20 bg-[#F1E8C7] dark:bg-[#252B1F] rounded w-full"></div>
                 </div>
               ))}
             </div>
           ) : multiSourceEvents.length === 0 ? (
-            <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-10 text-center space-y-3">
-              <div className="w-10 h-10 mx-auto rounded border border-[#E0D9CD] bg-[#F7F5F0] flex items-center justify-center text-[#858078]">
+            <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-10 text-center space-y-3">
+              <div className="w-10 h-10 mx-auto rounded border border-[#DDD2A8] dark:border-[#343B2A] bg-[#F1E8C7] dark:bg-[#161912] flex items-center justify-center text-[#6A734D] dark:text-[#9CA764]">
                 <ConflictIcon size={20} />
               </div>
-              <h3 className="text-base font-serif font-medium text-[#25231F]">
+              <h3 className="text-base font-serif font-medium text-[#191F0E] dark:text-[#F1E8C7]">
                 No multi-source clustered events found
               </h3>
-              <p className="text-xs text-[#706D66] max-w-md mx-auto">
+              <p className="text-xs text-[#555C3E] dark:text-[#CBD1B4] max-w-md mx-auto">
                 Currently ingested events either contain single source reports or haven't been clustered across multiple independent news wires yet.
               </p>
               <div className="pt-2">
@@ -123,15 +123,15 @@ export default function AnalysisPage() {
             multiSourceEvents.map((evt) => (
               <article
                 key={evt.id}
-                className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4"
+                className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-6 shadow-sm space-y-4"
               >
                 {/* Event Header */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0EDE6] pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#DDD2A8] dark:border-[#343B2A] pb-3">
                   <div className="flex items-center space-x-2">
                     <Badge variant={evt.category || "OTHER_MILITARY"}>
                       {evt.category || "OTHER_MILITARY"}
                     </Badge>
-                    <span className="text-xs font-mono text-[#858078]">
+                    <span className="text-xs font-mono text-[#6A734D] dark:text-[#B5BC94]">
                       Corroborated across {evt.article_count || 2} independent media feeds
                     </span>
                   </div>
@@ -139,42 +139,42 @@ export default function AnalysisPage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/events/${evt.id}`)}
-                    className="text-xs font-medium text-[#C96A4A] hover:text-[#B85C3E] flex items-center space-x-1"
+                    className="text-xs font-medium text-[#4F6830] dark:text-[#9CA764] hover:text-[#384A22] dark:hover:text-[#B5BC94] flex items-center space-x-1"
                   >
                     <span>Full Event Dossier</span>
                     <ChevronRightIcon size={12} />
                   </button>
                 </div>
 
-                <h2 className="text-base font-serif font-medium text-[#25231F] leading-snug">
+                <h2 className="text-base font-serif font-medium text-[#191F0E] dark:text-[#F1E8C7] leading-snug">
                   {evt.summary}
                 </h2>
 
                 {/* Comparative Claim / Discrepancy Matrix */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   {/* Reporting Feed A */}
-                  <div className="bg-[#FCFBF9] border border-[#E8E4DC] rounded p-4 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-mono uppercase text-[#706D66]">
+                  <div className="bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded p-4 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94]">
                       <span>Source Wire Alpha</span>
                       <Badge variant="high_trust">Major Defense Wire</Badge>
                     </div>
-                    <div className="text-xs text-[#302E2A] space-y-1">
-                      <span className="font-semibold text-[#25231F] block">Reported Synthesis:</span>
-                      <p className="leading-relaxed text-[#47423B]">
+                    <div className="text-xs text-[#242918] dark:text-[#F1E8C7] space-y-1">
+                      <span className="font-semibold text-[#191F0E] dark:text-[#F1E8C7] block">Reported Synthesis:</span>
+                      <p className="leading-relaxed text-[#555C3E] dark:text-[#CBD1B4]">
                         Focuses on official ministry confirmations, stated military exercise parameters, and defensive deployment postures.
                       </p>
                     </div>
                   </div>
 
                   {/* Reporting Feed B */}
-                  <div className="bg-[#FCFBF9] border border-[#E8E4DC] rounded p-4 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-mono uppercase text-[#706D66]">
+                  <div className="bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded p-4 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94]">
                       <span>Source Wire Bravo</span>
                       <Badge variant="mid_trust">Regional Open Source</Badge>
                     </div>
-                    <div className="text-xs text-[#302E2A] space-y-1">
-                      <span className="font-semibold text-[#25231F] block">Reported Synthesis:</span>
-                      <p className="leading-relaxed text-[#47423B]">
+                    <div className="text-xs text-[#242918] dark:text-[#F1E8C7] space-y-1">
+                      <span className="font-semibold text-[#191F0E] dark:text-[#F1E8C7] block">Reported Synthesis:</span>
+                      <p className="leading-relaxed text-[#555C3E] dark:text-[#CBD1B4]">
                         Highlights local eyewitness reports, unconfirmed auxiliary casualty figures, and contested airspace violations.
                       </p>
                     </div>
@@ -182,15 +182,15 @@ export default function AnalysisPage() {
                 </div>
 
                 {/* Analytical Resolution Status Bar */}
-                <div className="p-3 bg-[#FBF5EB] border border-[#ECD8B3] rounded text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div className="flex items-center space-x-2 text-[#8C5E1B]">
+                <div className="p-3 bg-[#F4EED9] dark:bg-[#252B1F] border border-[#DDD2A8] dark:border-[#343B2A] rounded text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center space-x-2 text-[#4F6830] dark:text-[#9CA764]">
                     <ConflictIcon size={14} />
                     <span className="font-semibold">Cross-Source Verification Status:</span>
-                    <span className="text-[#3E3320]">
+                    <span className="text-[#242918] dark:text-[#F1E8C7]">
                       Primary factual claims consistent; minor divergence in auxiliary casualty and tactical timing metrics.
                     </span>
                   </div>
-                  <span className="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-[#FFFFFF] border border-[#D9C49D] text-[#8C5E1B] shrink-0 self-start sm:self-auto">
+                  <span className="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] text-[#4F6830] dark:text-[#9CA764] shrink-0 self-start sm:self-auto">
                     Corroborated Consensus
                   </span>
                 </div>

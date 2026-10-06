@@ -116,20 +116,20 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] flex flex-col font-sans transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-5 flex flex-col">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#DDD2A8] dark:border-[#343B2A]">
           <div>
-            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+            <div className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] tracking-wider">
               Analytical Intelligence / RAG Query Workbench
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#191F0E] dark:text-[#F1E8C7] mt-1">
               Intelligence Research Assistant
             </h1>
-            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+            <p className="text-xs sm:text-sm text-[#555C3E] dark:text-[#CBD1B4] mt-1">
               Grounded, verifiable query engine interrogating the ingested military event index. All responses strictly cite member events.
             </p>
           </div>
@@ -142,26 +142,26 @@ export default function AssistantPage() {
         </div>
 
         {/* Workbench Card */}
-        <div className="flex-1 bg-[#FFFFFF] border border-[#E6E2DA] rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between overflow-hidden min-h-[520px]">
+        <div className="flex-1 bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md shadow-sm flex flex-col justify-between overflow-hidden min-h-[520px]">
           {/* Messages Trail */}
           <div className="flex-1 p-5 sm:p-6 overflow-y-auto space-y-6">
             {messages.length === 0 ? (
               <div className="py-8 max-w-xl mx-auto space-y-5 text-center">
-                <div className="w-10 h-10 mx-auto rounded border border-[#E0D9CD] bg-[#F7F5F0] flex items-center justify-center text-[#858078]">
+                <div className="w-10 h-10 mx-auto rounded border border-[#DDD2A8] dark:border-[#343B2A] bg-[#F1E8C7] dark:bg-[#161912] flex items-center justify-center text-[#6A734D] dark:text-[#9CA764]">
                   <AssistantIcon size={20} />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-serif font-medium text-base text-[#25231F]">
+                  <h3 className="font-serif font-medium text-base text-[#191F0E] dark:text-[#F1E8C7]">
                     Analyst Inquiry Workspace
                   </h3>
-                  <p className="text-xs text-[#706D66] leading-relaxed">
+                  <p className="text-xs text-[#555C3E] dark:text-[#CBD1B4] leading-relaxed">
                     Submit analytical questions regarding events, armed forces, weapons systems, or geopolitical tensions.
                   </p>
                 </div>
 
                 {/* Pre-configured sample inquiries */}
                 <div className="space-y-2 text-left pt-2">
-                  <span className="text-[11px] font-mono uppercase text-[#858078] block text-center">
+                  <span className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] block text-center">
                     Suggested Analyst Queries
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -170,7 +170,7 @@ export default function AssistantPage() {
                         key={idx}
                         type="button"
                         onClick={() => handleSendMessage(q)}
-                        className="text-left p-3 rounded border border-[#E6E2DA] bg-[#FCFBF9] hover:bg-[#F2EFE8] text-xs text-[#47423B] transition-colors leading-relaxed"
+                        className="text-left p-3 rounded border border-[#DDD2A8] dark:border-[#343B2A] bg-[#FCF9EF] dark:bg-[#161912] hover:bg-[#F4EED9] dark:hover:bg-[#252B1F] text-xs text-[#242918] dark:text-[#F1E8C7] transition-colors leading-relaxed"
                       >
                         "{q}"
                       </button>
@@ -188,8 +188,8 @@ export default function AssistantPage() {
                     key={idx}
                     className={`space-y-1.5 ${isUser ? "pl-8 sm:pl-16" : "pr-4 sm:pr-12"}`}
                   >
-                    <div className="flex items-center space-x-2 text-[11px] font-mono text-[#858078]">
-                      <span className="uppercase font-semibold text-[#25231F]">
+                    <div className="flex items-center space-x-2 text-[11px] font-mono text-[#6A734D] dark:text-[#B5BC94]">
+                      <span className="uppercase font-semibold text-[#191F0E] dark:text-[#F1E8C7]">
                         {isUser ? "Analyst Query" : "Intelligence Synthesis"}
                       </span>
                       {!isUser && modelMeta && (
@@ -205,16 +205,16 @@ export default function AssistantPage() {
                     <div
                       className={`p-4 rounded-md text-xs sm:text-sm leading-relaxed ${
                         isUser
-                          ? "bg-[#F7F5F0] border border-[#E6E2DA] text-[#25231F] font-medium"
-                          : "bg-[#FCFBF9] border border-[#E6E2DA] text-[#302E2A] space-y-3 font-serif"
+                          ? "bg-[#F1E8C7] dark:bg-[#252B1F] border border-[#DDD2A8] dark:border-[#343B2A] text-[#191F0E] dark:text-[#F1E8C7] font-medium"
+                          : "bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] text-[#191F0E] dark:text-[#F1E8C7] space-y-3 font-serif"
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.text}</p>
 
                       {/* Evidence Citations Footnote */}
                       {!isUser && msg.citations && msg.citations.length > 0 && (
-                        <div className="pt-3 border-t border-[#E8E4DC] font-sans space-y-2">
-                          <span className="text-[11px] font-mono uppercase text-[#706D66] block">
+                        <div className="pt-3 border-t border-[#DDD2A8] dark:border-[#343B2A] font-sans space-y-2">
+                          <span className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] block">
                             Evidence Attribution & Citations:
                           </span>
                           <div className="flex flex-wrap gap-2">
@@ -223,7 +223,7 @@ export default function AssistantPage() {
                                 key={citeId}
                                 type="button"
                                 onClick={() => navigate(`/events/${citeId}`)}
-                                className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded border border-[#D5CFC3] bg-[#FFFFFF] hover:bg-[#F2EFE8] text-[11px] font-mono text-[#C96A4A] transition-colors"
+                                className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded border border-[#DDD2A8] dark:border-[#343B2A] bg-[#FAF6E9] dark:bg-[#1F241A] hover:bg-[#F4EED9] dark:hover:bg-[#252B1F] text-[11px] font-mono text-[#4F6830] dark:text-[#9CA764] transition-colors"
                               >
                                 <span>Report #{citeId.slice(-6)}</span>
                                 <ChevronRightIcon size={11} />
@@ -240,17 +240,17 @@ export default function AssistantPage() {
 
             {sending && (
               <div className="space-y-1.5 pr-8">
-                <span className="text-[11px] font-mono text-[#858078] uppercase">
+                <span className="text-[11px] font-mono text-[#6A734D] dark:text-[#B5BC94] uppercase">
                   Processing Query
                 </span>
-                <div className="p-4 rounded-md bg-[#FCFBF9] border border-[#E6E2DA] text-xs text-[#706D66] animate-pulse space-y-1">
+                <div className="p-4 rounded-md bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] text-xs text-[#555C3E] dark:text-[#CBD1B4] animate-pulse space-y-1">
                   <p>Interrogating ChromaDB semantic vector index & synthesizing collective event evidence...</p>
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="p-3 bg-[#FDF2F2] border border-[#EFC7C7] rounded text-xs text-[#9B3838]">
+              <div className="p-3 bg-[#FBEAE8] dark:bg-[#2A1E1E] border border-[#E8B4B4] dark:border-[#522525] rounded text-xs text-[#8C3A3A] dark:text-[#E07A7A]">
                 {error}
               </div>
             )}
@@ -259,7 +259,7 @@ export default function AssistantPage() {
           </div>
 
           {/* Input Footer */}
-          <div className="p-4 border-t border-[#E6E2DA] bg-[#FCFBF9]">
+          <div className="p-4 border-t border-[#DDD2A8] dark:border-[#343B2A] bg-[#FAF6E9] dark:bg-[#1F241A]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -273,7 +273,7 @@ export default function AssistantPage() {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 disabled={sending}
-                className="flex-1 bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3.5 py-2 text-xs sm:text-sm text-[#25231F] placeholder-[#8F8A80] focus:border-[#C96A4A] focus:outline-none transition-colors disabled:opacity-50"
+                className="flex-1 bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md px-3.5 py-2 text-xs sm:text-sm text-[#191F0E] dark:text-[#F1E8C7] placeholder-[#8C887B] focus:border-[#9CA764] focus:outline-none transition-colors disabled:opacity-50"
               />
               <Button
                 type="submit"

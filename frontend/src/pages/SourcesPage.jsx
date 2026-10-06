@@ -85,20 +85,20 @@ export default function SourcesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#25231F] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] flex flex-col font-sans transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#E6E2DA]">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pb-4 border-b border-[#DDD2A8] dark:border-[#343B2A]">
           <div>
-            <div className="text-[11px] font-mono uppercase text-[#706D66]">
+            <div className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] tracking-wider">
               Feed Registry / Defense Feeds
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#25231F] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#191F0E] dark:text-[#F1E8C7] mt-1">
               Monitored Intelligence Sources
             </h1>
-            <p className="text-xs sm:text-sm text-[#706D66] mt-1">
+            <p className="text-xs sm:text-sm text-[#555C3E] dark:text-[#CBD1B4] mt-1">
               Configuration of open-source military news wires, RSS feeds, and defense portals ingested by the pipeline.
             </p>
           </div>
@@ -116,10 +116,10 @@ export default function SourcesPage() {
         </div>
 
         {/* Notice on Database Wiping Preservations */}
-        <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-4 text-xs text-[#706D66] flex items-start space-x-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-          <ShieldIcon size={16} className="text-[#C96A4A] mt-0.5 shrink-0" />
+        <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-4 text-xs text-[#555C3E] dark:text-[#CBD1B4] flex items-start space-x-3 shadow-sm">
+          <ShieldIcon size={16} className="text-[#9CA764] mt-0.5 shrink-0" />
           <div className="leading-relaxed">
-            <span className="font-semibold text-[#25231F]">
+            <span className="font-semibold text-[#191F0E] dark:text-[#F1E8C7]">
               Persistent Source Configuration:
             </span>{" "}
             Intelligence sources are strictly preserved across pipeline executions and database wipes. While articles, events, and vector indexes are refreshed on every run, configured sources remain permanently active.
@@ -128,20 +128,20 @@ export default function SourcesPage() {
 
         {/* Content Table */}
         {loading ? (
-          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-8 animate-pulse h-48"></div>
+          <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-8 animate-pulse h-48"></div>
         ) : error ? (
-          <div className="bg-[#FDF2F2] border border-[#EFC7C7] rounded-md p-4 text-xs text-[#9B3838]">
+          <div className="bg-[#FBEAE8] dark:bg-[#2A1E1E] border border-[#E8B4B4] dark:border-[#522525] rounded-md p-4 text-xs text-[#8C3A3A] dark:text-[#E07A7A]">
             <span className="font-semibold">Error:</span> {error}
           </div>
         ) : sources.length === 0 ? (
-          <div className="bg-[#FFFFFF] border border-[#E6E2DA] rounded-md p-8 text-center text-xs text-[#706D66] space-y-2">
-            <p className="font-medium text-[#25231F]">No intelligence sources configured</p>
+          <div className="bg-[#FAF6E9] dark:bg-[#1F241A] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md p-8 text-center text-xs text-[#6A734D] dark:text-[#CBD1B4] space-y-2">
+            <p className="font-medium text-[#191F0E] dark:text-[#F1E8C7]">No intelligence sources configured</p>
             <p>Click "Add Source" to register an RSS or news feed for ingestion.</p>
           </div>
         ) : (
           <Table>
             <thead>
-              <tr className="border-b border-[#E6E2DA] bg-[#F7F5F0] text-[#706D66] font-mono text-[11px] uppercase">
+              <tr className="border-b border-[#DDD2A8] dark:border-[#343B2A] bg-[#F1E8C7] dark:bg-[#161912] text-[#6A734D] dark:text-[#B5BC94] font-mono text-[11px] uppercase">
                 <th className="p-3">Source Name</th>
                 <th className="p-3">Protocol Type</th>
                 <th className="p-3">Feed Endpoint URL</th>
@@ -149,29 +149,29 @@ export default function SourcesPage() {
                 <th className="p-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F0EDE6]">
+            <tbody className="divide-y divide-[#DDD2A8] dark:divide-[#343B2A]">
               {sources.map((src) => (
-                <tr key={src.id} className="hover:bg-[#FCFBF9] transition-colors">
-                  <td className="p-3 font-medium text-[#25231F]">
+                <tr key={src.id} className="hover:bg-[#F4EED9] dark:hover:bg-[#252B1F] transition-colors">
+                  <td className="p-3 font-medium text-[#191F0E] dark:text-[#F1E8C7]">
                     {src.name}
                   </td>
-                  <td className="p-3 font-mono text-[11px] uppercase text-[#706D66]">
-                    <span className="px-1.5 py-0.5 rounded bg-[#F0EDE6] border border-[#DDD7CD]">
+                  <td className="p-3 font-mono text-[11px] uppercase text-[#6A734D] dark:text-[#B5BC94]">
+                    <span className="px-1.5 py-0.5 rounded bg-[#F1E8C7] dark:bg-[#252B1F] border border-[#DDD2A8] dark:border-[#343B2A]">
                       {src.type}
                     </span>
                   </td>
-                  <td className="p-3 font-mono text-xs text-[#706D66] max-w-sm truncate">
+                  <td className="p-3 font-mono text-xs text-[#555C3E] dark:text-[#CBD1B4] max-w-sm truncate">
                     {src.url}
                   </td>
                   <td className="p-3">
                     {src.active !== false ? (
-                      <span className="inline-flex items-center space-x-1 text-xs text-[#4A6B4E] font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#4A6B4E]" />
+                      <span className="inline-flex items-center space-x-1.5 text-xs text-[#4F6830] dark:text-[#9CA764] font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#4F6830] dark:bg-[#9CA764]" />
                         <span>Active</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center space-x-1 text-xs text-[#8F8A80] font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#8F8A80]" />
+                      <span className="inline-flex items-center space-x-1.5 text-xs text-[#8C887B] dark:text-[#7A7E6C] font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8C887B] dark:bg-[#7A7E6C]" />
                         <span>Disabled</span>
                       </span>
                     )}
@@ -181,7 +181,7 @@ export default function SourcesPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-[#9B3838] hover:bg-[#FDF2F2]"
+                        className="text-[#8C3A3A] dark:text-[#E07A7A] hover:bg-[#FBEAE8] dark:hover:bg-[#2A1E1E]"
                         onClick={() => handleDisableSource(src.id)}
                       >
                         Deactivate
@@ -202,13 +202,13 @@ export default function SourcesPage() {
         >
           <form onSubmit={handleAddSubmit} className="space-y-4 pt-1">
             {modalError && (
-              <div className="bg-[#FDF2F2] border border-[#EFC7C7] text-[#9B3838] p-3 rounded text-xs">
+              <div className="bg-[#FBEAE8] dark:bg-[#2A1E1E] border border-[#E8B4B4] dark:border-[#522525] text-[#8C3A3A] dark:text-[#E07A7A] p-3 rounded text-xs">
                 {modalError}
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+              <label className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] block">
                 Source Provider Name
               </label>
               <input
@@ -217,18 +217,18 @@ export default function SourcesPage() {
                 placeholder="e.g. Reuters Defense News, Defense News"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
+                className="w-full bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md px-3 py-1.5 text-xs text-[#191F0E] dark:text-[#F1E8C7] placeholder-[#8C887B] focus:border-[#9CA764] focus:outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+              <label className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] block">
                 Protocol Type
               </label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-2.5 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none"
+                className="w-full bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md px-2.5 py-1.5 text-xs text-[#191F0E] dark:text-[#F1E8C7] focus:border-[#9CA764] focus:outline-none"
               >
                 <option value="rss">RSS / Atom Feed</option>
                 <option value="api">REST API</option>
@@ -237,7 +237,7 @@ export default function SourcesPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-mono uppercase text-[#706D66] block">
+              <label className="text-[11px] font-mono uppercase text-[#6A734D] dark:text-[#B5BC94] block">
                 Target Feed URL
               </label>
               <input
@@ -246,11 +246,11 @@ export default function SourcesPage() {
                 placeholder="https://feeds.example.com/defense/rss.xml"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md px-3 py-1.5 text-xs text-[#25231F] focus:border-[#C96A4A] focus:outline-none font-mono"
+                className="w-full bg-[#FCF9EF] dark:bg-[#161912] border border-[#DDD2A8] dark:border-[#343B2A] rounded-md px-3 py-1.5 text-xs text-[#191F0E] dark:text-[#F1E8C7] placeholder-[#8C887B] focus:border-[#9CA764] focus:outline-none font-mono"
               />
             </div>
 
-            <div className="flex justify-end space-x-2 pt-3 border-t border-[#F0EDE6]">
+            <div className="flex justify-end space-x-2 pt-3 border-t border-[#DDD2A8] dark:border-[#343B2A]">
               <Button variant="outline" size="sm" onClick={() => setShowAddModal(false)}>
                 Cancel
               </Button>

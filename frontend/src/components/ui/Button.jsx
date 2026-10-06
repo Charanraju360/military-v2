@@ -10,19 +10,19 @@ export default function Button({
   ...props
 }) {
   const base =
-    "inline-flex items-center justify-center font-medium rounded-md transition-colors select-none focus:outline-none focus:ring-2 focus:ring-[#C96A4A]/25 disabled:opacity-40 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-medium rounded transition-colors select-none focus:outline-none focus:ring-2 focus:ring-[#9CA764]/40 disabled:opacity-40 disabled:cursor-not-allowed";
 
   const variants = {
     primary:
-      "bg-[#C96A4A] hover:bg-[#B85C3E] text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-[#BA5F40]",
+      "bg-[#9CA764] hover:bg-[#8B9654] text-[#191F0E] dark:text-[#12160A] font-semibold border border-[#8C9755] shadow-[0_1px_2px_rgba(0,0,0,0.06)]",
     secondary:
-      "bg-[#FFFFFF] hover:bg-[#F4F1EA] text-[#302D27] border border-[#D8D2C6] shadow-[0_1px_1px_rgba(0,0,0,0.02)]",
+      "bg-[#FAF6E9] dark:bg-[#1F241A] hover:bg-[#F2EAC8] dark:hover:bg-[#282F21] text-[#242918] dark:text-[#F1E8C7] border border-[#DDD2A8] dark:border-[#343B2A] shadow-[0_1px_1px_rgba(0,0,0,0.02)]",
     danger:
-      "bg-[#9B3838] hover:bg-[#862E2E] text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-[#8B3030]",
+      "bg-[#8C3A35] hover:bg-[#782E2A] text-white border border-[#782E2A] shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
     outline:
-      "bg-transparent hover:bg-[#ECE8DF] text-[#47423B] border border-[#D5CFC3]",
+      "bg-transparent hover:bg-[#9CA764]/10 dark:hover:bg-[#9CA764]/15 text-[#242918] dark:text-[#F1E8C7] border border-[#DDD2A8] dark:border-[#343B2A]",
     ghost:
-      "bg-transparent hover:bg-[#ECE8DF] text-[#47423B]",
+      "bg-transparent hover:bg-[#9CA764]/10 dark:hover:bg-[#9CA764]/15 text-[#3D442C] dark:text-[#D8CFB0]",
   };
 
   const sizes = {

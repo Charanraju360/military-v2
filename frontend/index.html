@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,10 +8,10 @@
     <script>
       (function() {
         const storedTheme = localStorage.getItem("osint_theme");
-        if (storedTheme === "light") {
-          document.documentElement.classList.remove("dark");
-        } else {
+        if (storedTheme === "dark") {
           document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
         }
       })();
     </script>
@@ -22,7 +22,7 @@
       rel="stylesheet"
     />
   </head>
-  <body class="bg-[#F7F5F0] dark:bg-[#141311] text-[#25231F] dark:text-[#EDE8DF] antialiased selection:bg-[#F9EFEA] selection:text-[#B85C3E]">
+  <body class="bg-[#F1E8C7] dark:bg-[#161912] text-[#242918] dark:text-[#F1E8C7] antialiased selection:bg-[#9CA764]/30 selection:text-[#191F0E]">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

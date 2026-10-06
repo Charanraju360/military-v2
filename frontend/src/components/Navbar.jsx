@@ -69,7 +69,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="bg-[#FCFBF9] border-b border-[#E6E2DA] sticky top-0 z-40 text-[#25231F]">
+    <header className="bg-[#FAF6E9] dark:bg-[#1C2117] border-b border-[#DDD2A8] dark:border-[#343B2A] sticky top-0 z-40 text-[#242918] dark:text-[#F1E8C7]">
       {/* Top Analyst Context Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-14 flex items-center justify-between gap-4">
@@ -80,14 +80,14 @@ export default function Navbar() {
           >
             <div className="flex flex-col">
               <div className="flex items-center space-x-2">
-                <span className="font-semibold text-sm tracking-tight text-[#25231F]">
+                <span className="font-semibold text-sm tracking-tight text-[#242918] dark:text-[#F1E8C7]">
                   OSINT-EIP
                 </span>
-                <span className="text-[10px] uppercase font-mono font-medium tracking-wider px-1.5 py-0.2 rounded bg-[#EFECE5] text-[#6B655D] border border-[#DDD7CD]">
+                <span className="text-[10px] uppercase font-mono font-medium tracking-wider px-1.5 py-0.2 rounded bg-[#9CA764]/20 dark:bg-[#9CA764]/25 text-[#333D1F] dark:text-[#E5EEBC] border border-[#9CA764]/40">
                   MIL-INTEL
                 </span>
               </div>
-              <span className="text-[11px] text-[#858078] hidden sm:inline leading-none mt-0.5">
+              <span className="text-[11px] text-[#6B7354] dark:text-[#9A947A] hidden sm:inline leading-none mt-0.5">
                 Event Intelligence Platform
               </span>
             </div>
@@ -99,7 +99,7 @@ export default function Navbar() {
             className="flex-1 max-w-sm hidden md:block"
           >
             <div className="relative flex items-center">
-              <span className="absolute left-2.5 text-[#858078] pointer-events-none">
+              <span className="absolute left-2.5 text-[#6B7354] dark:text-[#857F65] pointer-events-none">
                 <SearchIcon size={14} />
               </span>
               <input
@@ -107,7 +107,7 @@ export default function Navbar() {
                 placeholder="Search events, entities, or locations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#FFFFFF] border border-[#DEDAD2] rounded-md pl-8 pr-3 py-1.5 text-xs text-[#25231F] placeholder-[#8F8A80] focus:border-[#C96A4A] focus:outline-none transition-colors"
+                className="w-full bg-[#FCF9EF] dark:bg-[#191E15] border border-[#DDD2A8] dark:border-[#38412F] rounded-md pl-8 pr-3 py-1.5 text-xs text-[#242918] dark:text-[#F1E8C7] placeholder-[#7F8863] dark:placeholder-[#7C765E] focus:border-[#9CA764] focus:outline-none transition-colors"
               />
             </div>
           </form>
@@ -118,18 +118,18 @@ export default function Navbar() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center space-x-1.5 px-2 py-1 rounded border border-[#E6E2DA] bg-[#FFFFFF] hover:bg-[#F7F5F0] transition-colors text-xs text-[#706D66]"
+              className="flex items-center space-x-1.5 px-2 py-1 rounded border border-[#DDD2A8] dark:border-[#343B2A] bg-[#FAF6E9] dark:bg-[#1F241A] hover:bg-[#F2EAC8] dark:hover:bg-[#282F21] transition-colors text-xs text-[#474F33] dark:text-[#D8CFB0]"
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               aria-label="Toggle theme"
             >
               {isDark ? (
                 <>
-                  <SunIcon size={13} className="text-[#D97757]" />
+                  <SunIcon size={13} className="text-[#9CA764]" />
                   <span className="hidden sm:inline font-mono text-[11px]">Light</span>
                 </>
               ) : (
                 <>
-                  <MoonIcon size={13} className="text-[#706D66]" />
+                  <MoonIcon size={13} className="text-[#6B7354]" />
                   <span className="hidden sm:inline font-mono text-[11px]">Dark</span>
                 </>
               )}
@@ -139,14 +139,14 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => navigate("/pipeline")}
-              className="flex items-center space-x-1.5 px-2.5 py-1 rounded border border-[#E6E2DA] bg-[#FFFFFF] hover:bg-[#F7F5F0] transition-colors text-[11px] text-[#5C574F]"
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded border border-[#DDD2A8] dark:border-[#343B2A] bg-[#FAF6E9] dark:bg-[#1F241A] hover:bg-[#F2EAC8] dark:hover:bg-[#282F21] transition-colors text-[11px] text-[#474F33] dark:text-[#D8CFB0]"
               title="Pipeline Operational Status"
             >
               <span
                 className={`w-2 h-2 rounded-full ${
                   pipelineState?.running
-                    ? "bg-[#C96A4A] animate-pulse"
-                    : "bg-[#4A6B4E]"
+                    ? "bg-[#9CA764] animate-pulse"
+                    : "bg-[#7A8747]"
                 }`}
               />
               <span className="font-medium hidden sm:inline">
@@ -162,7 +162,7 @@ export default function Navbar() {
         </div>
 
         {/* Primary Analytical Navigation Tabs */}
-        <nav className="flex items-center space-x-1 overflow-x-auto border-t border-[#F0ECE4] py-1 -mb-[1px]">
+        <nav className="flex items-center space-x-1 overflow-x-auto border-t border-[#DDD2A8] dark:border-[#343B2A] py-1 -mb-[1px]">
           {navItems.map((item) => {
             const isActive = item.exact
               ? currentPath === "/"
@@ -178,13 +178,13 @@ export default function Navbar() {
                 onClick={() => navigate(item.path)}
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors whitespace-nowrap ${
                   isActive
-                    ? "bg-[#ECE7DF] text-[#25231F] font-semibold border-b-2 border-[#C96A4A]"
-                    : "text-[#706D66] hover:text-[#25231F] hover:bg-[#F2EFE8]"
+                    ? "bg-[#9CA764]/20 dark:bg-[#9CA764]/25 text-[#242918] dark:text-[#F1E8C7] font-semibold border-b-2 border-[#9CA764]"
+                    : "text-[#5C6448] dark:text-[#A39B7C] hover:text-[#242918] dark:hover:text-[#F1E8C7] hover:bg-[#9CA764]/10 dark:hover:bg-[#9CA764]/15"
                 }`}
               >
                 <Icon
                   size={14}
-                  className={isActive ? "text-[#C96A4A]" : "text-[#858078]"}
+                  className={isActive ? "text-[#7A8747] dark:text-[#9CA764]" : "text-[#737C5A] dark:text-[#857F65]"}
                 />
                 <span>{item.label}</span>
               </button>
